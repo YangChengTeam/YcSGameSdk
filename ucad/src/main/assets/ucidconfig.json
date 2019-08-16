@@ -1,0 +1,11 @@
+{
+  "message": "九游广告SDK参数",
+  "data": {
+    "appId": "1000007481",
+    "splashAdId": "1562660889741",
+    "bannerAdId": "1562734274878",
+    "videoAdId": "1562660861908",
+    "insterAdId": "1562660902394"
+  },
+  "code": "0"
+}

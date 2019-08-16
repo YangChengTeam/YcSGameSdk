@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.yc.adsdk">
+
+    <!--SDK 必选权限配置开始-->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
+    <!--add 2018-08-01 2.7.1版本新增权限-->
+    <uses-permission android:name="android.permission.GET_TASKS" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <!--SDK 必选权限配置结束-->
+
+    <!--SDK 可选权限配置开始；建议应用配置定位权限，可以提升应用的广告收益-->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!--如果应用需要精准定位的话加上该权限-->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!--SDK 可选权限配置结束-->
+
+    <application>
+
+
+        <!--SDK 必选组件配置开始-->
+        <activity android:name="com.oppo.mobad.activity.AdActivity" />
+
+        <service android:name="com.oppo.mobad.service.AdService" />
+        <!--add 2018-05-01-->
+        <!--如果奖励视频不需要随机器旋转⽽旋转的请将VideoActivity设置android:screenOrientation="sensor"修改横屏或竖屏-->
+        <activity
+            android:name="com.oppo.mobad.activity.VideoActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="sensor" />
+        <!--若出现激励视频黑屏，可加上硬件加速配置-->
+        <!--android:hardwareAccelerated=”true”-->
+        <!--SDK 必选组件配置结束-->
+
+    </application>
+
+</manifest>
