@@ -2,14 +2,11 @@ package com.opos.mobaddemo.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 
 import com.opos.mobaddemo.R;
 import com.yc.adsdk.core.AdCallback;
-import com.yc.adsdk.core.AdConfig;
 import com.yc.adsdk.core.AdType;
-import com.yc.adsdk.core.Config;
 import com.yc.adsdk.core.Error;
 import com.yc.adsdk.core.InitCallback;
 import com.yc.adsdk.core.SAdSDK;
