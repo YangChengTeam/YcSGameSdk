@@ -29,6 +29,7 @@ public class SAdSDK implements ISGameSDK {
 
     @Override
     public void init(Context context, InitCallback callback) {
+        callback.onSuccess();
         Log.d(TAG, "init: ");
     }
 
@@ -41,7 +42,8 @@ public class SAdSDK implements ISGameSDK {
                 return;
             }
         }
-        Log.d(TAG, "showAd: ");
+        callback.onPresent();
+        Log.d(TAG, "showAd: AdType ： " + type);
     }
 
     @Override

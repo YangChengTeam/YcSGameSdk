@@ -9,6 +9,7 @@ android {
 
         applicationId "com.whsjlgame.zzx2.aligames"
 
+
         minSdkVersion 15
         targetSdkVersion 26
         versionCode 1

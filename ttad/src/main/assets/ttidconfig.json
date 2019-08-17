@@ -1,0 +1,19 @@
+{
+  "message": "头条广告SDK参数",
+  "data": {
+    "appId": "5001121",
+    "appName": "APP测试媒体",
+    "bannerNative": "901121423",
+    "bannerDownload": "901121895",
+    "banner": "901121987",
+    "videoNative": "901121709",
+    "videoVertical": "901121375",
+    "videoRewardHorizontal": "901121430",
+    "videoReward": "901121365",
+    "videoHorizontal": "901121375",
+    "splash": "801121648",
+    "insterNormal": "901121725",
+    "insterDownload": "901121417"
+  },
+  "code": "0"
+}
