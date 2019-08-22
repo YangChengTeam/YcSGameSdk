@@ -1,11 +1,13 @@
 {
   "message": "OPPO广告SDK参数",
   "data": {
-    "appId": "3705524",
+    "appId": "30161517",
     "splashAdId": "23213",
-    "bannerAdId": "23211",
-    "videoAdId": "23234",
-    "insterAdId": "23212"
+    "bannerAdId": "114263",
+    "videoAdId": "114264",
+    "insterAdId": "23212",
+    "userAppAecret": "4888e03250ee4cd396e83ba861b54a7a",
+    "userAppId": "30161517"
   },
   "code": "0"
 }

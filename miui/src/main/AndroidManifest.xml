@@ -11,13 +11,17 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:allowBackup">
-        <activity android:name=".MiSplashHorizonActivity"
+        <activity
+            android:name=".MiMainHorizontalActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
             android:screenOrientation="landscape"
-            android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen"
-            />
-        <activity android:name=".MiMainActivity" />
-        <!-- activity的 android:screenOrientation 竖版设置为 "portrait" -->
+            android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen"></activity>
+        <activity
+            android:name=".MiSplashHorizonActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen" />
+        <activity android:name=".MiMainActivity" /> <!-- activity的 android:screenOrientation 竖版设置为 "portrait" -->
         <!-- android:screenOrientation="landscape" -->
         <activity
             android:name=".MiSplashActivity"

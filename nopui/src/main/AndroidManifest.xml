@@ -11,9 +11,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:allowBackup">
-        <activity android:name=".activity.NopSplashActivity">
+        <activity android:name="com.ymm.nopui.activity.NopMainActivity"></activity>
+        <activity android:name="com.ymm.nopui.activity.NopSplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

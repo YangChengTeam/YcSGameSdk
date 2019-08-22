@@ -2,20 +2,22 @@ package com.opos.mobaddemo.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 
 import com.opos.mobaddemo.R;
 import com.yc.adsdk.core.AdCallback;
 import com.yc.adsdk.core.AdType;
 import com.yc.adsdk.core.Error;
-import com.yc.adsdk.core.InitCallback;
+import com.yc.adsdk.core.InitAdCallback;
+import com.yc.adsdk.core.InitUserCallback;
 import com.yc.adsdk.core.SAdSDK;
 import com.yc.adsdk.ui.BasePermissionActivity;
 
 
 public class OppoSplashActivity extends BasePermissionActivity {
 
-    private String TAG = "GameSdkLog";
+    private String TAG = "GameSdkLog_OppoSplashActivity";
 
 
     @Override
@@ -26,14 +28,18 @@ public class OppoSplashActivity extends BasePermissionActivity {
 
     @Override
     protected void onRequestPermissionSuccess() {
-        SAdSDK.getImpl().init(this, new InitCallback() {
+
+        SAdSDK.getImpl().initAd(this, new InitAdCallback() {
             @Override
             public void onSuccess() {
+                Log.d(TAG, "OppoSplashActivity  init ad onSuccess: ");
                 showSplashAd();
             }
 
             @Override
             public void onFailure(Error error) {
+                Log.d(TAG, "OppoSplashActivity  init ad onFailure: ");
+                startNext();
             }
         });
     }
@@ -54,6 +60,7 @@ public class OppoSplashActivity extends BasePermissionActivity {
 
             @Override
             public void onPresent() {
+                Log.d(TAG, "showSplashAd onPresent: ");
             }
 
             @Override

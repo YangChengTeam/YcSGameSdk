@@ -8,13 +8,13 @@ import android.view.KeyEvent;
 import com.yc.adsdk.core.AdCallback;
 import com.yc.adsdk.core.AdType;
 import com.yc.adsdk.core.Error;
-import com.yc.adsdk.core.InitCallback;
+import com.yc.adsdk.core.InitAdCallback;
 import com.yc.adsdk.core.SAdSDK;
 import com.yc.adsdk.ui.BasePermissionActivity;
 
 public class MiSplashActivity extends BasePermissionActivity {
 
-    private static final String TAG = "MiSplashActivity";
+    private static final String TAG = "GameSdkLog_MiSplashActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,11 +29,11 @@ public class MiSplashActivity extends BasePermissionActivity {
     }
 
     private void initAd() {
-        SAdSDK.getImpl().init(this, new InitCallback() {
+        SAdSDK.getImpl().initAd(this, new InitAdCallback() {
             @Override
             public void onSuccess() {
                 Log.d(TAG, "onSuccess: ");
-                SAdSDK.getImpl().showAd(MiSplashActivity.this, AdType.SPLASH_VERTICAL, new AdCallback() {
+                SAdSDK.getImpl().showAd(MiSplashActivity.this, AdType.SPLASH, new AdCallback() {
                     @Override
                     public void onDismissed() {
                         startActivity(new Intent(MiSplashActivity.this, MiMainActivity.class));

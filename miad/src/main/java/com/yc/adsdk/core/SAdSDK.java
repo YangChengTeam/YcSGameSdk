@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
@@ -28,12 +29,15 @@ public class SAdSDK implements ISGameSDK {
         return sAdSDK;
     }
 
-
     @Override
-    public void init(Context context, InitCallback callback) {
-        SMiSDK.getImpl().init(context, callback);
+    public void initAd(Context context, InitAdCallback adCallback) {
+        SMiSDK.getImpl().initAd(context, adCallback);
     }
 
+    @Override
+    public void initUser(Context context, InitUserCallback userCallback) {
+        SMiSDK.getImpl().initUser(context, userCallback);
+    }
 
     /**
      * @param context  上下文对象
@@ -60,6 +64,16 @@ public class SAdSDK implements ISGameSDK {
     @Override
     public void hindAd(AdTypeHind type) {
         SMiSDK.getImpl().hindAd(type);
+    }
+
+    @Override
+    public void login(Context context, IUserApiCallback iUserApiCallback) {
+
+    }
+
+    @Override
+    public void logout(Context context, IUserApiCallback iUserApiCallback) {
+
     }
 
     private void openSettingGivePermission(Context context) {

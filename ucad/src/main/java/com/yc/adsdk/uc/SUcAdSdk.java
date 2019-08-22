@@ -15,11 +15,13 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.yc.adsdk.core.AdCallback;
-import com.yc.adsdk.core.AdError;
+import com.yc.adsdk.core.Error;
 import com.yc.adsdk.core.AdType;
 import com.yc.adsdk.core.AdTypeHind;
 import com.yc.adsdk.core.ISGameSDK;
-import com.yc.adsdk.core.InitCallback;
+import com.yc.adsdk.core.IUserApiCallback;
+import com.yc.adsdk.core.InitAdCallback;
+import com.yc.adsdk.core.InitUserCallback;
 import com.yc.adsdk.utils.LocalJsonResolutionUtils;
 
 import org.json.JSONException;
@@ -54,7 +56,7 @@ public class SUcAdSdk implements ISGameSDK {
     private String TAG = "GameSdkLog";
 
     private static SUcAdSdk sUcAdSdk;
-    private InitCallback mSAdSDKInitCallback;
+    private InitAdCallback mSAdSDKInitCallback;
     //    private String mIdAppId;
     private NGASDK mNgasdk;
     private NGABannerController mNgaBannerController;
@@ -81,44 +83,30 @@ public class SUcAdSdk implements ISGameSDK {
 
     private AdCallback mAdCallback;
 
-    private String welcomeId;
-    private String bannerPosId;
-    private String insertPosId;
-    private String videoPosId;
 
     private NGAVideoController mNGAVideoController;
 
     @Override
-    public void init(Context context, InitCallback callback) {
-        this.mSAdSDKInitCallback = callback;
+    public void initAd(Context context, InitAdCallback adCallback) {
+        this.mSAdSDKInitCallback = adCallback;
         this.mActivity = (Activity) context;
         this.mHandler = new Handler(Looper.getMainLooper());
         if (!initConfig(context)) {
             return;
         }
-
-        if (TextUtils.isEmpty(mIdAppId)) {
-            Toast.makeText(context, "初始化失败，缺少广告媒体AppId", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (TextUtils.isEmpty(mBannerPosId) || TextUtils.isEmpty(mInsertPosId) || TextUtils.isEmpty(mVideoPosId) || TextUtils.isEmpty(mWelcomeId)) {
-            Toast.makeText(context, "初始化失败，缺少广告位ID PosId", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         Log.d(TAG, "init: ids " + " mIdAppId " + mIdAppId + " bannerPosId " + mBannerPosId + " insertPosId " + mInsertPosId + " videoPosId " + mVideoPosId + " welcomeId " + mWelcomeId);
-
-        this.bannerPosId = mBannerPosId;
-        this.insertPosId = mInsertPosId;
-        this.videoPosId = mVideoPosId;
-        this.welcomeId = mWelcomeId;
 
         initAd(mActivity);
     }
 
+    @Override
+    public void initUser(Context context, InitUserCallback userCallback) {
+
+    }
+
     private boolean initConfig(Context context) {
         String idconfig = LocalJsonResolutionUtils.getJson(context, "ucidconfig.json");
-        if(TextUtils.isEmpty(idconfig)){
+        if (TextUtils.isEmpty(idconfig)) {
             Toast.makeText(context, "初始化失败，idconfig.json文件配置错误", Toast.LENGTH_SHORT).show();
             return false;
         }
@@ -193,16 +181,22 @@ public class SUcAdSdk implements ISGameSDK {
             Log.d(TAG, "success: initAd: success");
             Log.d(TAG, "initSGameSDK initAd: fail");
             if (mSAdSDKInitCallback != null) {
-                AdError error = new AdError();
-                error.setCode(String.valueOf(AdError.AD_INIT_ERROR));
+                Error error = new Error();
+                error.setCode(String.valueOf(Error.AD_INIT_ERROR));
                 error.setThrowable(throwable);
                 mSAdSDKInitCallback.onFailure(error);
             }
         }
     };
 
+
     @Override
     public void showAd(Context context, AdType type, AdCallback callback) {
+        this.showAd(context, type, callback, null);
+    }
+
+    @Override
+    public void showAd(Context context, AdType type, AdCallback callback, ViewGroup viewGroup) {
         this.mAdCallback = callback;
         switch (type) {
             case BANNER:
@@ -216,7 +210,7 @@ public class SUcAdSdk implements ISGameSDK {
                 break;
             case SPLASH:
                 Activity activity = (Activity) context;
-                ViewGroup viewGroup = activity.getWindow().getDecorView().findViewById(android.R.id.content);
+                viewGroup = activity.getWindow().getDecorView().findViewById(android.R.id.content);
                 loadSplashAd(activity, viewGroup);
                 break;
         }
@@ -233,13 +227,23 @@ public class SUcAdSdk implements ISGameSDK {
         }
     }
 
+    @Override
+    public void login(Context context, IUserApiCallback iUserApiCallback) {
+
+    }
+
+    @Override
+    public void logout(Context context, IUserApiCallback iUserApiCallback) {
+
+    }
+
     /**
      * 插屏广告
      * 部分广点通的插屏是只能竖屏的,广点通那边的问题
      */
     private void loadInsertAd(Activity activity) {  //插屏广告
-        Log.d(TAG, "loadBannerAd: mIdAppId " + mIdAppId + " insertPosId " + insertPosId);
-        NGAInsertProperties properties = new NGAInsertProperties(activity, mIdAppId, insertPosId, null);
+        Log.d(TAG, "loadBannerAd: mIdAppId " + mIdAppId + " mInsertPosId " + mInsertPosId);
+        NGAInsertProperties properties = new NGAInsertProperties(activity, mIdAppId, mInsertPosId, null);
         properties.setListener(mInsertAdListener);
         NGASDK ngasdk = getNGASDK();
         ngasdk.loadAd(properties);
@@ -290,8 +294,8 @@ public class SUcAdSdk implements ISGameSDK {
         public void onErrorAd(int code, String message) {
             Log.d(TAG, "InsertAdListener onErrorAd: code " + code + " message " + message);
             if (mAdCallback != null) {
-                AdError error = new AdError();
-                error.setCode(String.valueOf(AdError.AD_ERROR));
+                Error error = new Error();
+                error.setCode(String.valueOf(Error.AD_ERROR));
 //                error.setCode(String.valueOf(code));
                 error.setMessage(message);
                 mAdCallback.onNoAd(error);
@@ -320,9 +324,9 @@ public class SUcAdSdk implements ISGameSDK {
         mWindowManager = (WindowManager) activity.getSystemService(activity.WINDOW_SERVICE);
         mWindowManager.addView(mBannerView, params);
 
-        Log.d(TAG, "loadBannerAd: mIdAppId " + mIdAppId + " bannerPosId " + bannerPosId);
+        Log.d(TAG, "loadBannerAd: mIdAppId " + mIdAppId + " mBannerPosId " + mBannerPosId);
 
-        NGABannerProperties properties = new NGABannerProperties(activity, mIdAppId, bannerPosId, mBannerView);
+        NGABannerProperties properties = new NGABannerProperties(activity, mIdAppId, mBannerPosId, mBannerView);
         properties.setListener(mBannerAdListener);
         mNgasdk = NGASDKFactory.getNGASDK();
         mNgasdk.loadAd(properties);
@@ -362,8 +366,8 @@ public class SUcAdSdk implements ISGameSDK {
         @Override
         public void onErrorAd(int code, String message) {
             if (mAdCallback != null) {
-                AdError error = new AdError();
-                error.setCode(String.valueOf(AdError.AD_ERROR));
+                Error error = new Error();
+                error.setCode(String.valueOf(Error.AD_ERROR));
 //                error.setCode(String.valueOf(code));
                 error.setMessage(message);
                 mAdCallback.onNoAd(error);
@@ -382,16 +386,16 @@ public class SUcAdSdk implements ISGameSDK {
 
 
     private void loadVideoAd(Activity activity) {
-        Log.d(TAG, "loadBannerAd: mIdAppId " + mIdAppId + " videoPosId " + videoPosId);
-        NGAVideoProperties properties = new NGAVideoProperties(activity, mIdAppId, videoPosId);
+        Log.d(TAG, "loadBannerAd: mIdAppId " + mIdAppId + " mVideoPosId " + mVideoPosId);
+        NGAVideoProperties properties = new NGAVideoProperties(activity, mIdAppId, mVideoPosId);
         properties.setListener(mVideoAdListener);
         NGASDK ngasdk = NGASDKFactory.getNGASDK();
         ngasdk.loadAd(properties);
     }
 
     public void loadSplashAd(Activity activity, ViewGroup container) {
-        Log.d(TAG, "loadBannerAd: mIdAppId " + mIdAppId + " welcomeId " + welcomeId);
-        NGAWelcomeProperties properties = new NGAWelcomeProperties(activity, mIdAppId, welcomeId, container);
+        Log.d(TAG, "loadBannerAd: mIdAppId " + mIdAppId + " mWelcomeId " + mWelcomeId);
+        NGAWelcomeProperties properties = new NGAWelcomeProperties(activity, mIdAppId, mWelcomeId, container);
         // 支持开发者自定义的跳过按钮。SDK要求skipContainer一定在传入后要处于VISIBLE状态，且其宽高都不得小于3x3dp。
         // 如果需要使用SDK默认的跳过按钮，可以选择上面两个构造方法。
         //properties.setSkipView(skipView);
@@ -450,8 +454,8 @@ public class SUcAdSdk implements ISGameSDK {
             Log.d(TAG, "VideoAdListener onErrorAd: 04" + " ucsdk_code " + code + "  message " + message);
 //            showCacheVideoAd(code, message);
             if (mAdCallback != null) {
-                AdError adError = new AdError();
-                adError.setCode(String.valueOf(AdError.AD_ERROR));
+                Error adError = new Error();
+                adError.setCode(String.valueOf(Error.AD_ERROR));
 //                adError.setCode(String.valueOf(code));
                 adError.setMessage(message);
                 mAdCallback.onNoAd(adError);
@@ -471,8 +475,8 @@ public class SUcAdSdk implements ISGameSDK {
         } else {
             Log.d(TAG, "showCacheVideoAd: VideoAdListener 视频广告加载失败，不存在缓存视频");
             if (mAdCallback != null) {
-                AdError adError = new AdError();
-                adError.setCode(String.valueOf(AdError.AD_ERROR));
+                Error adError = new Error();
+                adError.setCode(String.valueOf(Error.AD_ERROR));
 //                adError.setCode(String.valueOf(code));
                 adError.setMessage(message);
                 mAdCallback.onNoAd(adError);
@@ -495,8 +499,8 @@ public class SUcAdSdk implements ISGameSDK {
         public void onErrorAd(int code, String message) {
             Log.d(TAG, "SplashAdListener onErrorAd: 06" + " code " + code + "  message " + message); //code 8201  message [5004-没有广告]
             if (mAdCallback != null) {
-                AdError adError = new AdError();
-                adError.setCode(String.valueOf(AdError.AD_ERROR));
+                Error adError = new Error();
+                adError.setCode(String.valueOf(Error.AD_ERROR));
 //                adError.setCode(String.valueOf(code));
                 adError.setMessage(message);
                 mAdCallback.onNoAd(adError);

@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.v7.app.AlertDialog;
+import android.view.ViewGroup;
 
 import com.yc.adsdk.uc.SUcAdSdk;
 
@@ -31,14 +32,24 @@ public class SAdSDK implements ISGameSDK {
         return sAdSDK;
     }
 
+
     @Override
-    public void init(Context context, InitCallback callback) {
-        SUcAdSdk.getImpl().init(context, callback);
+    public void initAd(Context context, InitAdCallback adCallback) {
+        SUcAdSdk.getImpl().initAd(context, adCallback);
     }
 
+    @Override
+    public void initUser(Context context, InitUserCallback userCallback) {
+        SUcAdSdk.getImpl().initUser(context, userCallback);
+    }
 
     @Override
     public void showAd(Context context, AdType type, AdCallback callback) {
+        this.showAd(context, type, callback, null);
+    }
+
+    @Override
+    public void showAd(Context context, AdType type, AdCallback callback, ViewGroup viewGroup) {
         if (Build.VERSION.SDK_INT >= 23) {
             this.adType = type;
             this.adCallback = callback;
@@ -51,6 +62,16 @@ public class SAdSDK implements ISGameSDK {
     @Override
     public void hindAd(AdTypeHind type) {
         SUcAdSdk.getImpl().hindAd(type);
+    }
+
+    @Override
+    public void login(Context context, IUserApiCallback iUserApiCallback) {
+
+    }
+
+    @Override
+    public void logout(Context context, IUserApiCallback iUserApiCallback) {
+
     }
 
 

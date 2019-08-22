@@ -28,11 +28,16 @@ public class SAdSDK implements ISGameSDK {
     }
 
 
+
     @Override
-    public void init(Context context, InitCallback callback) {
-        SOppoAdSDk.getImpl().init(context, callback);
+    public void initAd(Context context, InitAdCallback adCallback) {
+        SOppoAdSDk.getImpl().initAd(context, adCallback);
     }
 
+    @Override
+    public void initUser(Context context, InitUserCallback userCallback) {
+        SOppoAdSDk.getImpl().initUser(context, userCallback);
+    }
 
     /**
      * @param context  上下文对象
@@ -59,6 +64,16 @@ public class SAdSDK implements ISGameSDK {
     @Override
     public void hindAd(AdTypeHind type) {
         SOppoAdSDk.getImpl().hindAd(type);
+    }
+
+    @Override
+    public void login(Context context, IUserApiCallback iUserApiCallback) {
+        SOppoAdSDk.getImpl().login(context, iUserApiCallback);
+    }
+
+    @Override
+    public void logout(Context context, IUserApiCallback iUserApiCallback) {
+        SOppoAdSDk.getImpl().logout(context, iUserApiCallback);
     }
 
     private void openSettingGivePermission(Context context) {

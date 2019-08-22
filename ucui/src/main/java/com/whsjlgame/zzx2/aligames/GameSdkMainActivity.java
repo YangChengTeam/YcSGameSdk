@@ -7,7 +7,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.yc.adsdk.core.AdCallback;
-import com.yc.adsdk.core.AdError;
+import com.yc.adsdk.core.Error;
 import com.yc.adsdk.core.AdType;
 import com.yc.adsdk.core.AdTypeHind;
 import com.yc.adsdk.core.SAdSDK;
@@ -66,7 +66,7 @@ public class GameSdkMainActivity  extends BasePermissionActivity implements View
                 }
 
                 @Override
-                public void onNoAd(AdError error) {
+                public void onNoAd(Error error) {
 
                 }
 
@@ -88,7 +88,7 @@ public class GameSdkMainActivity  extends BasePermissionActivity implements View
                 }
 
                 @Override
-                public void onNoAd(AdError error) {
+                public void onNoAd(Error error) {
 
                 }
 
@@ -110,7 +110,7 @@ public class GameSdkMainActivity  extends BasePermissionActivity implements View
                 }
 
                 @Override
-                public void onNoAd(AdError error) {
+                public void onNoAd(Error error) {
 
                 }
 

@@ -5,9 +5,9 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.yc.adsdk.core.AdCallback;
-import com.yc.adsdk.core.AdError;
+import com.yc.adsdk.core.Error;
 import com.yc.adsdk.core.AdType;
-import com.yc.adsdk.core.InitCallback;
+import com.yc.adsdk.core.InitAdCallback;
 import com.yc.adsdk.core.SAdSDK;
 import com.yc.adsdk.ui.BasePermissionActivity;
 
@@ -29,7 +29,7 @@ public class GameSdkSplashActivity extends BasePermissionActivity {
     }
 
     private void initAdSdk() {
-        SAdSDK.getImpl().init(this, new InitCallback() {
+        SAdSDK.getImpl().initAd(this, new InitAdCallback() {
             @Override
             public void onSuccess() {
                 Log.d(TAG, "onSuccess: 初始化广告SDK onSuccess");
@@ -37,7 +37,7 @@ public class GameSdkSplashActivity extends BasePermissionActivity {
             }
 
             @Override
-            public void onFailure(AdError error) {
+            public void onFailure(Error error) {
                 String code = error.getCode();
                 String message = error.getMessage();
                 Throwable throwable = error.getThrowable();
@@ -55,7 +55,7 @@ public class GameSdkSplashActivity extends BasePermissionActivity {
             }
 
             @Override
-            public void onNoAd(AdError error) { //没有广告或广告错误
+            public void onNoAd(Error error) { //没有广告或广告错误
                 startNext();
             }
 

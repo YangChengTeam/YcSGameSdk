@@ -37,9 +37,12 @@ import com.bytedance.sdk.openadsdk.TTSplashAd;
 import com.yc.adsdk.R;
 import com.yc.adsdk.core.AdCallback;
 import com.yc.adsdk.core.AdType;
+import com.yc.adsdk.core.AdTypeHind;
 import com.yc.adsdk.core.Error;
 import com.yc.adsdk.core.ISGameSDK;
-import com.yc.adsdk.core.InitCallback;
+import com.yc.adsdk.core.IUserApiCallback;
+import com.yc.adsdk.core.InitAdCallback;
+import com.yc.adsdk.core.InitUserCallback;
 import com.yc.adsdk.utils.LocalJsonResolutionUtils;
 
 import org.json.JSONException;
@@ -98,12 +101,19 @@ public class STtAdSDk implements ISGameSDK {
     }
 
 
+
+
     @Override
-    public void init(Context context, InitCallback callback) {
+    public void initAd(Context context, InitAdCallback adCallback) {
         if (!initConfig(context)) {
             return;
         }
-        TTAdManagerHolder.init(context, mAppId, mAppName);
+        TTAdManagerHolder.init(context, mAppId, mAppName,adCallback);
+    }
+
+    @Override
+    public void initUser(Context context, InitUserCallback userCallback) {
+
     }
 
     @Override
@@ -140,16 +150,16 @@ public class STtAdSDk implements ISGameSDK {
                 mSplashContainer = activity.getWindow().getDecorView().findViewById(android.R.id.content);
                 loadNativeAd(mVideoNative);
                 break;
-            case VIDEO_REWARD_V:
+            case VIDEO_REWARD:
                 loadRewardVideoAd(mVideoReward, TTAdConstant.VERTICAL);
                 break;
-            case VIDEO_REWARD:
+            case VIDEO_REWARD_HORIZON:
                 loadRewardVideoAd(mVideoRewardHorizontal, TTAdConstant.HORIZONTAL);
                 break;
-            case VIDEO_V:
+            case VIDEO:
                 loadVideoAd(mVideoVertical, TTAdConstant.VERTICAL);
                 break;
-            case VIDEO:
+            case VIDEO_HORIZON:
                 loadVideoAd(mVideoHorizontal, TTAdConstant.HORIZONTAL);
                 break;
             case INSTER_DOWNLOAD:
@@ -169,6 +179,21 @@ public class STtAdSDk implements ISGameSDK {
                 loadSplashAd(mSplash);  // 加载开屏广告
                 break;
         }
+    }
+
+    @Override
+    public void hindAd(AdTypeHind type) {
+
+    }
+
+    @Override
+    public void login(Context context, IUserApiCallback iUserApiCallback) {
+
+    }
+
+    @Override
+    public void logout(Context context, IUserApiCallback iUserApiCallback) {
+
     }
 
     private boolean initConfig(Context context) {

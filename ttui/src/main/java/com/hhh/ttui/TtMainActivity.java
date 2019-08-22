@@ -1,7 +1,7 @@
 package com.hhh.ttui;
 
+import android.app.Activity;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
@@ -12,7 +12,7 @@ import com.yc.adsdk.core.AdType;
 import com.yc.adsdk.core.Error;
 import com.yc.adsdk.core.SAdSDK;
 
-public class TtMainActivity extends AppCompatActivity implements View.OnClickListener {
+public class TtMainActivity extends Activity implements View.OnClickListener {
 
     private static final String TAG = "STtAdSDk";
 
@@ -94,7 +94,7 @@ public class TtMainActivity extends AppCompatActivity implements View.OnClickLis
                 }
             });
         } else if (id == R.id.ad_sdk_main_btn_video_h) {
-            SAdSDK.getImpl().showAd(TtMainActivity.this, AdType.VIDEO, new AdCallback() {
+            SAdSDK.getImpl().showAd(TtMainActivity.this, AdType.VIDEO_HORIZON, new AdCallback() {
                 @Override
                 public void onDismissed() {
 
@@ -116,7 +116,7 @@ public class TtMainActivity extends AppCompatActivity implements View.OnClickLis
                 }
             });
         } else if (id == R.id.ad_sdk_main_btn_video_reward) {
-            SAdSDK.getImpl().showAd(TtMainActivity.this, AdType.VIDEO_REWARD, new AdCallback() {
+            SAdSDK.getImpl().showAd(TtMainActivity.this, AdType.VIDEO_REWARD_HORIZON, new AdCallback() {
                 @Override
                 public void onDismissed() {
 
@@ -138,7 +138,7 @@ public class TtMainActivity extends AppCompatActivity implements View.OnClickLis
                 }
             });
         } else if (id == R.id.ad_sdk_main_btn_video_v) {
-            SAdSDK.getImpl().showAd(TtMainActivity.this, AdType.VIDEO_V, new AdCallback() {
+            SAdSDK.getImpl().showAd(TtMainActivity.this, AdType.VIDEO, new AdCallback() {
                 @Override
                 public void onDismissed() {
 

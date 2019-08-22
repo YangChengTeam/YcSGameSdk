@@ -11,14 +11,14 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:allowBackup">
-        <activity android:name=".GameSdkSplashActivity">
+        <activity android:name="com.whsjlgame.zzx2.aligames.GameSdkSplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".GameSdkMainActivity" />
+        <activity android:name="com.whsjlgame.zzx2.aligames.GameSdkMainActivity" />
     </application>
 
 </manifest>

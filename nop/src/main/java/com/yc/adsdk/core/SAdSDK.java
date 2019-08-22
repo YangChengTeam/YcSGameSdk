@@ -5,9 +5,10 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
-import android.util.Log;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.yc.adsdk.nop.SNopAdSDk;
 import com.yc.adsdk.utils.PermissionHelpUtils;
 
 
@@ -28,27 +29,44 @@ public class SAdSDK implements ISGameSDK {
     }
 
     @Override
-    public void init(Context context, InitCallback callback) {
-        callback.onSuccess();
-        Log.d(TAG, "init: ");
+    public void initAd(Context context, InitAdCallback adCallback) {
+        SNopAdSDk.getImpl().initAd(context, adCallback);
     }
 
+    @Override
+    public void initUser(Context context, InitUserCallback userCallback) {
+        SNopAdSDk.getImpl().initUser(context, userCallback);
+    }
 
     @Override
     public void showAd(Context context, AdType type, AdCallback callback) {
+        this.showAd(context, type, callback, null);
+    }
+
+    @Override
+    public void showAd(Context context, AdType type, AdCallback callback, ViewGroup viewGroup) {
         if (Build.VERSION.SDK_INT >= 23) {
             if (!PermissionHelpUtils.checkMustPermissions(context)) {
                 openSettingGivePermission(context);
                 return;
             }
         }
-        callback.onPresent();
-        Log.d(TAG, "showAd: AdType ： " + type);
+        SNopAdSDk.getImpl().showAd(context, type, callback);
     }
 
     @Override
     public void hindAd(AdTypeHind type) {
-        Log.d(TAG, "hindAd: ");
+        SNopAdSDk.getImpl().hindAd(type);
+    }
+
+    @Override
+    public void login(Context context, IUserApiCallback iUserApiCallback) {
+        SNopAdSDk.getImpl().login(context, iUserApiCallback);
+    }
+
+    @Override
+    public void logout(Context context, IUserApiCallback iUserApiCallback) {
+        SNopAdSDk.getImpl().logout(context, iUserApiCallback);
     }
 
     private void openSettingGivePermission(Context context) {

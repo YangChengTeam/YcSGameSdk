@@ -2,6 +2,8 @@ package com.yc.adsdk.oppo;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
@@ -11,6 +13,12 @@ import android.view.ViewManager;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.nearme.game.sdk.GameCenterSDK;
+import com.nearme.game.sdk.callback.ApiCallback;
+import com.nearme.game.sdk.callback.GameExitCallback;
+import com.nearme.game.sdk.callback.SinglePayCallback;
+import com.nearme.game.sdk.common.model.biz.PayInfo;
+import com.nearme.platform.opensdk.pay.PayResponse;
 import com.oppo.mobad.api.InitParams;
 import com.oppo.mobad.api.MobAdManager;
 import com.oppo.mobad.api.ad.BannerAd;
@@ -29,11 +37,15 @@ import com.yc.adsdk.core.AdType;
 import com.yc.adsdk.core.AdTypeHind;
 import com.yc.adsdk.core.Error;
 import com.yc.adsdk.core.ISGameSDK;
-import com.yc.adsdk.core.InitCallback;
+import com.yc.adsdk.core.IUserApiCallback;
+import com.yc.adsdk.core.InitAdCallback;
+import com.yc.adsdk.core.InitUserCallback;
 import com.yc.adsdk.utils.LocalJsonResolutionUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Random;
 
 /**
  * Created by caokun on 2019/8/12 19:45.
@@ -41,10 +53,9 @@ import org.json.JSONObject;
 
 public class SOppoAdSDk implements ISGameSDK {
 
-    private static final String TAG = "GameSdkLog";
+    private static final String LOGTAG = "GameSdkLog_SOppoAdSDk";
     private static SOppoAdSDk sAdSDK;
     private AdCallback mAdCallback;
-//    private Context context;
     private RewardVideoAd mRewardVideoAd;
     private InterstitialAd mInterstitialAd;
     private String mAppId;
@@ -52,6 +63,10 @@ public class SOppoAdSDk implements ISGameSDK {
     private String mBannerAdId;
     private String mVideoAdId;
     private String mInsterAdId;
+    private String mUserAppId;
+    private String mUserAppAecret;
+    private boolean mIsInitAd = false;
+    private boolean mIsInitUser = false;
 
 
     public static SOppoAdSDk getImpl() {
@@ -65,83 +80,220 @@ public class SOppoAdSDk implements ISGameSDK {
         return sAdSDK;
     }
 
-
     @Override
-    public void init(Context context, final InitCallback callback) {
-        if (!initConfig(context)) {
+    public void initAd(Context context, InitAdCallback adCallback) {
+        if (!initConfig(context, adCallback != null, false)) {
             return;
         }
-        Log.d(TAG, "init: mAppId " + mAppId + "  mSplashAdId :" + mSplashAdId + "  mBannerAdId :" + mBannerAdId + "  mVideoAdId :" + mVideoAdId + "  mInsterAdId :" + mInsterAdId);
+        Log.d(LOGTAG, "initAd: mAppId " + mAppId + "  mSplashAdId :" + mSplashAdId + "  mBannerAdId :" + mBannerAdId + "  mVideoAdId :" + mVideoAdId + "  mInsterAdId :" + mInsterAdId);
 
         boolean supportedMobile = MobAdManager.getInstance().isSupportedMobile();
         if (!supportedMobile) {
-            Toast.makeText(context, "当前手机机型不支持Oppo联盟SDK", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "初始化广告失败，当前手机机型不支持Oppo联盟SDK", Toast.LENGTH_SHORT).show();
+            Error error = new Error();
+            error.setMessage("当前手机机型不支持Oppo联盟SDK");
+            adCallback.onFailure(error);
             return;
         }
+        if (mIsInitAd) {
+            adCallback.onSuccess();
+        } else {
+            if (adCallback != null) {
+                mIsInitAd = true;
+                initSdkAd(context, adCallback);
+            }
+        }
+    }
 
+    @Override
+    public void initUser(Context context, InitUserCallback userCallback) {
+        if (!initConfig(context, false, userCallback != null)) {
+            return;
+        }
+        Log.d(LOGTAG, "initUser: mUserAppAecret " + mUserAppAecret + "  mUserAppId :" + mUserAppId);
+
+        boolean supportedMobile = MobAdManager.getInstance().isSupportedMobile();
+        if (!supportedMobile) {
+            Toast.makeText(context, "初始化账户失败，当前手机机型不支持Oppo联盟SDK", Toast.LENGTH_SHORT).show();
+            Error error = new Error();
+            error.setMessage("当前手机机型不支持Oppo联盟SDK");
+            userCallback.onFailure(error);
+            return;
+        }
+        if (mIsInitUser) {
+            userCallback.onSuccess();
+        } else {
+            if (userCallback != null) {
+                mIsInitUser = true;
+                initSdkUser(context, userCallback);
+            }
+        }
+    }
+
+    private void initSdkAd(final Context context, final InitAdCallback adCallback) {
         InitParams initParams = new InitParams.Builder()
                 .setDebug(true)//true打开SDK日志，当应用发布Release版本时，必须注释掉这行代码的调用，或者设为false
                 .build();
+
+
         /**
          * 调用这行代码初始化广告SDK
          */
         MobAdManager.getInstance().init(context, mAppId, initParams, new IInitListener() {
             @Override
             public void onSuccess() {
-                if (callback != null) {
-                    callback.onSuccess();
+                Log.d(LOGTAG, "SOppoAdSDk onSuccess: ");
+                if (adCallback != null) {
+                    adCallback.onSuccess();
                 }
             }
 
             @Override
             public void onFailed(String s) {
-                if (callback != null) {
+                Log.d(LOGTAG, "SOppoAdSDk onFailed: " + s);
+                if (adCallback != null) {
                     Error error = new Error();
                     error.setMessage(s);
-                    callback.onFailure(error);
+                    adCallback.onFailure(error);
                 }
             }
         });
     }
 
-    private boolean initConfig(Context context) {
+    private void initSdkUser(Context context, final InitUserCallback userCallback) {
+        GameCenterSDK.init(mUserAppAecret, context);
+        new android.os.Handler(new Handler.Callback() {
+            @Override
+            public boolean handleMessage(Message msg) {
+                userCallback.onSuccess();
+                return false;
+            }
+        }).sendEmptyMessageDelayed(0, 2100);//表示延迟3秒发送任务
+    }
+
+    @Override
+    public void login(Context context, final IUserApiCallback iUserApiCallback) {
+        GameCenterSDK.getInstance().doLogin(context, new ApiCallback() {
+            @Override
+            public void onSuccess(String s) {
+                iUserApiCallback.onSuccess(s);
+            }
+
+            @Override
+            public void onFailure(String s, int i) {
+                iUserApiCallback.onFailure(s, i);
+            }
+        });
+    }
+
+    @Override
+    public void logout(Context context, final IUserApiCallback iUserApiCallback) {
+        GameCenterSDK.getInstance().onExit((Activity) context, new GameExitCallback() {
+            @Override
+            public void exitGame() {
+                iUserApiCallback.onSuccess("游戏账号已退出");
+            }
+        });
+    }
+
+    private void doPay(final Context context) {
+        // cp支付参数
+        int amount = 1; // 支付金额，单位分
+        PayInfo payInfo = new PayInfo(System.currentTimeMillis()
+                + new Random().nextInt(1000) + "", "自定义字段", amount);
+        payInfo.setProductDesc("商品描述");
+        payInfo.setProductName("商品名称");
+        // 支付结果服务器回调地址，不通过服务端回调发货的游戏可以不用填写~
+        payInfo.setCallbackUrl("http://gamecenter.wanyol.com:8080/gamecenter/callback_test_url");
+
+        GameCenterSDK.getInstance().doSinglePay(context, payInfo,
+                new SinglePayCallback() {
+
+                    @Override
+                    public void onSuccess(String resultMsg) {
+                        // add OPPO 支付成功处理逻辑~
+                        Toast.makeText(context, "支付成功",
+                                Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onFailure(String resultMsg, int resultCode) {
+                        // add OPPO 支付失败处理逻辑~
+                        if (PayResponse.CODE_CANCEL != resultCode) {
+                            Toast.makeText(context, "支付失败",
+                                    Toast.LENGTH_SHORT).show();
+                        } else {
+                            // 取消支付处理
+                            Toast.makeText(context, "支付取消",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onCallCarrierPay(PayInfo payInfo, boolean bySelectSMSPay) {
+                        // TODO Auto-generated method stub
+                        Toast.makeText(context, "运营商支付",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private boolean initConfig(Context context, boolean isAddInitAdCallback, boolean isAddInitUserCallback) {
         String idconfig = LocalJsonResolutionUtils.getJson(context, "oppoidconfig.json");
         try {
             JSONObject jsonObject = new JSONObject(idconfig);
             JSONObject data = jsonObject.getJSONObject("data");
-            if (data.has("appId")) {
-                mAppId = data.getString("appId");
-                if (TextUtils.isEmpty(mAppId)) {
-                    Toast.makeText(context, "初始化失败，缺少广告必须参数AppId", Toast.LENGTH_SHORT).show();
-                    return false;
+            if (isAddInitAdCallback) {
+                if (data.has("appId")) {
+                    mAppId = data.getString("appId");
+                    if (TextUtils.isEmpty(mAppId)) {
+                        Toast.makeText(context, "初始化失败，缺少广告必须参数AppId", Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
+                }
+                if (data.has("splashAdId")) {
+                    mSplashAdId = data.getString("splashAdId");
+                    if (TextUtils.isEmpty(mSplashAdId)) {
+                        Toast.makeText(context, "初始化失败，缺少广告必须参数AppId", Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
+                }
+                if (data.has("bannerAdId")) {
+                    mBannerAdId = data.getString("bannerAdId");
+                    if (TextUtils.isEmpty(mBannerAdId)) {
+                        Toast.makeText(context, "初始化失败，缺少广告必须参数bannerAdId", Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
+                }
+                if (data.has("videoAdId")) {
+                    mVideoAdId = data.getString("videoAdId");
+                    if (TextUtils.isEmpty(mVideoAdId)) {
+                        Toast.makeText(context, "初始化失败，缺少广告必须参数videoAdId", Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
+                }
+                if (data.has("insterAdId")) {
+                    mInsterAdId = data.getString("insterAdId");
+                    if (TextUtils.isEmpty(mInsterAdId)) {
+                        Toast.makeText(context, "初始化失败，缺少广告必须参数insterAdId", Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
                 }
             }
-            if (data.has("splashAdId")) {
-                mSplashAdId = data.getString("splashAdId");
-                if (TextUtils.isEmpty(mSplashAdId)) {
-                    Toast.makeText(context, "初始化失败，缺少广告必须参数AppId", Toast.LENGTH_SHORT).show();
-                    return false;
+            if (isAddInitUserCallback) {
+                if (data.has("userAppAecret")) {
+                    mUserAppAecret = data.getString("userAppAecret");
+                    if (TextUtils.isEmpty(mUserAppAecret)) {
+                        Toast.makeText(context, "初始化失败，缺少广告必须参数 userAppAecret", Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
                 }
-            }
-            if (data.has("bannerAdId")) {
-                mBannerAdId = data.getString("bannerAdId");
-                if (TextUtils.isEmpty(mBannerAdId)) {
-                    Toast.makeText(context, "初始化失败，缺少广告必须参数bannerAdId", Toast.LENGTH_SHORT).show();
-                    return false;
-                }
-            }
-            if (data.has("videoAdId")) {
-                mVideoAdId = data.getString("videoAdId");
-                if (TextUtils.isEmpty(mVideoAdId)) {
-                    Toast.makeText(context, "初始化失败，缺少广告必须参数videoAdId", Toast.LENGTH_SHORT).show();
-                    return false;
-                }
-            }
-            if (data.has("insterAdId")) {
-                mInsterAdId = data.getString("insterAdId");
-                if (TextUtils.isEmpty(mInsterAdId)) {
-                    Toast.makeText(context, "初始化失败，缺少广告必须参数insterAdId", Toast.LENGTH_SHORT).show();
-                    return false;
+                if (data.has("userAppId")) {
+                    mUserAppId = data.getString("userAppId");
+                    if (TextUtils.isEmpty(mUserAppId)) {
+                        Toast.makeText(context, "初始化失败，缺少广告必须参数 userAppId", Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
                 }
             }
         } catch (JSONException e) {
@@ -149,6 +301,7 @@ public class SOppoAdSDk implements ISGameSDK {
         }
         return true;
     }
+
 
     @Override
     public void showAd(Context context, AdType type, AdCallback callback) {
@@ -198,7 +351,7 @@ public class SOppoAdSDk implements ISGameSDK {
             /**
              *请求广告成功
              */
-            Log.d(TAG, "IInterstitialAdListener onAdReady");
+            Log.d(LOGTAG, "IInterstitialAdListener onAdReady");
             /**
              *  调用sowAd方法展示插屏广告
              *  注意：只有请求广告回调onAdReady以后，调用loadAd方法才会展示广告，如果是onAdFailed，则即使调用了showAd，也不会展示广告
@@ -214,7 +367,7 @@ public class SOppoAdSDk implements ISGameSDK {
             /**
              *广告展示
              */
-            Log.d(TAG, "IInterstitialAdListener onAdShow");
+            Log.d(LOGTAG, "IInterstitialAdListener onAdShow");
             mAdCallback.onPresent();
         }
 
@@ -223,7 +376,7 @@ public class SOppoAdSDk implements ISGameSDK {
             /**
              *请求广告失败
              */
-            Log.d(TAG, "IInterstitialAdListener onAdFailed:errMsg=" + (null != errMsg ? errMsg : ""));
+            Log.d(LOGTAG, "IInterstitialAdListener onAdFailed:errMsg=" + (null != errMsg ? errMsg : ""));
             Error error = new Error();
             error.setMessage(errMsg);
             mAdCallback.onNoAd(error);
@@ -235,7 +388,7 @@ public class SOppoAdSDk implements ISGameSDK {
             /**
              *广告被点击
              */
-            Log.d(TAG, "IInterstitialAdListener onAdClick");
+            Log.d(LOGTAG, "IInterstitialAdListener onAdClick");
             mAdCallback.onClick();
         }
 
@@ -244,7 +397,7 @@ public class SOppoAdSDk implements ISGameSDK {
             /**
              *广告被关闭
              */
-            Log.d(TAG, "IInterstitialAdListener onAdClose");
+            Log.d(LOGTAG, "IInterstitialAdListener onAdClose");
             mAdCallback.onDismissed();
         }
     };
@@ -252,7 +405,7 @@ public class SOppoAdSDk implements ISGameSDK {
     private void loadVideoAd(Activity context) {
         mRewardVideoAd = new RewardVideoAd(context, mVideoAdId, rewardVideoAdListener);
 
-        Log.d(TAG, "loadVideoAd: mRewardVideoAd " + mRewardVideoAd);
+        Log.d(LOGTAG, "loadVideoAd: mRewardVideoAd " + mRewardVideoAd);
 
         /**
          * 调用loadAd方法请求激励视频广告;通过RewardVideoAdParams.setFetchTimeout方法可以设置请求
@@ -275,15 +428,18 @@ public class SOppoAdSDk implements ISGameSDK {
     }
 
     private IRewardVideoAdListener rewardVideoAdListener = new IRewardVideoAdListener() {
+
+        private boolean mIsCanReward;
+
         @Override
         public void onAdSuccess() { //1.视频准备好
-            Log.d(TAG, "IRewardVideoAdListener onAdSuccess: ");
+            Log.d(LOGTAG, "IRewardVideoAdListener .视频准备好 onAdSuccess: ");
             playVideo();
         }
 
         @Override
         public void onAdFailed(String s) {
-            Log.d(TAG, "IRewardVideoAdListener onAdFailed: " + s);
+            Log.d(LOGTAG, "IRewardVideoAdListener onAdFailed: " + s);
             Error error = new Error();
             error.setMessage(s);
             mAdCallback.onNoAd(error);
@@ -291,24 +447,24 @@ public class SOppoAdSDk implements ISGameSDK {
 
         @Override
         public void onAdClick(long l) {  //9.点击广告
-            Log.d(TAG, "IRewardVideoAdListener onAdClick: " + l);
+            Log.d(LOGTAG, "IRewardVideoAdListener 点击广告 onAdClick: " + l);
             mAdCallback.onClick();
         }
 
         @Override
         public void onVideoPlayStart() {  //2.视频开始播放
-            Log.d(TAG, "IRewardVideoAdListener onVideoPlayStart: ");
+            Log.d(LOGTAG, "IRewardVideoAdListener 视频开始播放 onVideoPlayStart: ");
             mAdCallback.onPresent();
         }
 
         @Override
         public void onVideoPlayComplete() {  //3.倒计时结束，播放完成，到应用下载页
-            Log.d(TAG, "IRewardVideoAdListener onVideoPlayComplete: ");
+            Log.d(LOGTAG, "IRewardVideoAdListener 倒计时结束，播放完成，到应用下载页 onVideoPlayComplete: ");
         }
 
         @Override
         public void onVideoPlayError(String s) {
-            Log.d(TAG, "IRewardVideoAdListener onVideoPlayError: " + s);
+            Log.d(LOGTAG, "IRewardVideoAdListener onVideoPlayError: " + s);
             Error error = new Error();
             error.setMessage(s);
             mAdCallback.onNoAd(error);
@@ -316,30 +472,42 @@ public class SOppoAdSDk implements ISGameSDK {
 
         @Override
         public void onVideoPlayClose(long l) {  //9.手动跳过
-            Log.d(TAG, "IRewardVideoAdListener onVideoPlayClose: -------- " + l);
+            Log.d(LOGTAG, "IRewardVideoAdListener 手动跳过,无法获得奖励 onVideoPlayClose: -------- mIsCanReward " + mIsCanReward + " -- " + l);
+            if (mIsCanReward) {
+                mIsCanReward = false;
+                mAdCallback.onDismissed();
+            }
+
         }
 
         @Override
         public void onLandingPageOpen() { //4.打开应用安装页
-            Log.d(TAG, "IRewardVideoAdListener onLandingPageOpen: ");
+            Log.d(LOGTAG, "IRewardVideoAdListener 打开应用安装页 onLandingPageOpen: ");
         }
 
         @Override
         public void onLandingPageClose() {  //5.关闭应用安装页
-            Log.d(TAG, "IRewardVideoAdListener onLandingPageClose: ");
+            Log.d(LOGTAG, "IRewardVideoAdListener 关闭应用安装页 onLandingPageClose: mIsCanReward " + mIsCanReward);
+            if (mIsCanReward) {
+                mIsCanReward = false;
+                mAdCallback.onDismissed();
+            }
         }
 
         /**
+         * 给用户发放奖励
          * 给用户发放奖励
          * 注意：只能在收到onReward回调的时候才能给予用户奖励。
          */
 
         @Override
         public void onReward(Object... objects) {
-            Log.d(TAG, "IRewardVideoAdListener onReward: ");
-            mAdCallback.onDismissed();
+            mIsCanReward = true;
+            Log.d(LOGTAG, "IRewardVideoAdListener 给用户发放奖励 onReward: mIsCanReward " + mIsCanReward);
+//            mAdCallback.onDismissed();
         }
     };
+
 
     @Override
     public void hindAd(AdTypeHind type) {
@@ -349,6 +517,7 @@ public class SOppoAdSDk implements ISGameSDK {
                 break;
         }
     }
+
 
     private void hindBannerAd() {
         if (mWindowManager != null && mBannerAdAdView != null && mBannerAdAdView.getParent() != null) {
@@ -403,25 +572,25 @@ public class SOppoAdSDk implements ISGameSDK {
     private IBannerAdListener bannerAdmListener = new IBannerAdListener() {
         @Override
         public void onAdReady() {
-            Log.d(TAG, "BannerAd onAdReady: ");
+            Log.d(LOGTAG, "BannerAd onAdReady: ");
         }
 
         @Override
         public void onAdClose() {
-            Log.d(TAG, "BannerAd onAdClose: ");
+            Log.d(LOGTAG, "BannerAd onAdClose: ");
             mAdCallback.onDismissed();
         }
 
 
         @Override
         public void onAdShow() {
-            Log.d(TAG, "BannerAd onAdShow: ");
+            Log.d(LOGTAG, "BannerAd onAdShow: ");
             mAdCallback.onPresent();
         }
 
         @Override
         public void onAdFailed(String s) {
-            Log.d(TAG, "BannerAd onAdFailed: " + s);
+            Log.d(LOGTAG, "BannerAd onAdFailed: " + s);
             Error error = new Error();
             error.setMessage(s);
             mAdCallback.onNoAd(error);
@@ -429,7 +598,7 @@ public class SOppoAdSDk implements ISGameSDK {
 
         @Override
         public void onAdClick() {
-            Log.d(TAG, "BannerAd onAdClick: ");
+            Log.d(LOGTAG, "BannerAd onAdClick: ");
             mAdCallback.onClick();
         }
     };
@@ -474,7 +643,7 @@ public class SOppoAdSDk implements ISGameSDK {
             Error error = new Error();
             error.setMessage("SplashAd Exception : " + e.toString());
             mAdCallback.onNoAd(error);
-            Log.d(TAG, "", e);
+            Log.d(LOGTAG, "", e);
         }
     }
 
@@ -485,7 +654,7 @@ public class SOppoAdSDk implements ISGameSDK {
 
         @Override
         public void onAdDismissed() {
-            Log.d(TAG, "SplashAd onAdDismissed: ");
+            Log.d(LOGTAG, "SplashAd onAdDismissed: ");
             if (!mIsClickSplashAd) {
                 mAdCallback.onDismissed();
             } else {
@@ -495,13 +664,13 @@ public class SOppoAdSDk implements ISGameSDK {
 
         @Override
         public void onAdShow() {
-            Log.d(TAG, "SplashAd onAdShow: ");
+            Log.d(LOGTAG, "SplashAd onAdShow: ");
             mAdCallback.onPresent();
         }
 
         @Override
         public void onAdFailed(String s) {
-            Log.d(TAG, "SplashAd onAdFailed: " + s);
+            Log.d(LOGTAG, "SplashAd onAdFailed: " + s);
             Error error = new Error();
             error.setMessage(s);
             mAdCallback.onNoAd(error);
@@ -509,9 +678,25 @@ public class SOppoAdSDk implements ISGameSDK {
 
         @Override
         public void onAdClick() {
-            Log.d(TAG, "SplashAd onAdClick: ");
+            Log.d(LOGTAG, "SplashAd onAdClick: ");
             mAdCallback.onClick();
             mIsClickSplashAd = true;
         }
     };
+    /**
+     * oppoidconfig 测试ID
+     * {
+     *   "message": "OPPO广告SDK参数",
+     *   "data": {
+     *     "appId": "3705524",
+     *     "splashAdId": "23213",
+     *     "bannerAdId": "23211",
+     *     "videoAdId": "23234",
+     *     "insterAdId": "23212",
+     *     "userAppAecret": "4888e03250ee4cd396e83ba861b54a7a",
+     *     "userAppId": "30161517"
+     *   },
+     *   "code": "0"
+     * }
+     */
 }

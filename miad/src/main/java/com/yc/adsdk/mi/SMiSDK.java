@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewManager;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -24,7 +25,9 @@ import com.yc.adsdk.core.AdType;
 import com.yc.adsdk.core.AdTypeHind;
 import com.yc.adsdk.core.Error;
 import com.yc.adsdk.core.ISGameSDK;
-import com.yc.adsdk.core.InitCallback;
+import com.yc.adsdk.core.IUserApiCallback;
+import com.yc.adsdk.core.InitAdCallback;
+import com.yc.adsdk.core.InitUserCallback;
 import com.yc.adsdk.utils.LocalJsonResolutionUtils;
 
 import org.json.JSONException;
@@ -36,7 +39,7 @@ import org.json.JSONObject;
 
 public class SMiSDK implements ISGameSDK {
 
-    private String TAG = "GameSdkLog";
+    private String TAG = "GameSdkLog_SMiSDK";
 
     private static SMiSDK sAdSDK;
     private String mAppId;
@@ -64,32 +67,47 @@ public class SMiSDK implements ISGameSDK {
     }
 
     @Override
-    public void init(Context context, final InitCallback callback) {
+    public void initAd(Context context, final InitAdCallback adCallback) {
         if (!initConfig(context)) {
             return;
         }
+        Log.d(TAG, "initAd: mAppId " + mAppId + " mAppKey " + mAppKey + " mBannerAdId " + mBannerAdId + " mInsterHorizonAdId " + mInsterHorizonAdId
+                + " mInsterVerticalAdId " + mInsterVerticalAdId + " mAppToken " + mAppToken + " mSplashHorizonAdId " + mSplashHorizonAdId + " mSplashVerticalAdId " + mSplashVerticalAdId
+                + " mVideoHorizonAdId " + mVideoHorizonAdId + " mVideoHorizonAdId " + mVideoHorizonAdId);
+        Log.d(TAG, "init: MimoSdk.isSdkReady() " + MimoSdk.isSdkReady());
+        if (!MimoSdk.isSdkReady()) {
+            // 正式上线时候务必关闭stage和debug
+            MimoSdk.setDebugOn();
+            MimoSdk.setStageOn();
 
-        // 正式上线时候务必关闭stage和debug
-        MimoSdk.setDebugOn();
-        MimoSdk.setStageOn();
+            // 如需要在本地预置插件,请在assets目录下添加mimo_asset.apk;
+            MimoSdk.init(context, mAppId, mAppKey, mAppToken, new IMimoSdkListener() {
+                @Override
+                public void onSdkInitSuccess() {
+                    Log.d(TAG, "onSdkInitSuccess: 小米广告SDK初始化成功 ");
+                    adCallback.onSuccess();
+                }
 
-        // 如需要在本地预置插件,请在assets目录下添加mimo_asset.apk;
-        MimoSdk.init(context, mAppId, mAppKey, mAppToken, new IMimoSdkListener() {
-            @Override
-            public void onSdkInitSuccess() {
-                Log.d(TAG, "onSdkInitSuccess: ");
-                callback.onSuccess();
-            }
-
-            @Override
-            public void onSdkInitFailed() {
-                Log.d(TAG, "onSdkInitFailed: ");
-                Error error = new Error();
-                error.setMessage("小米游戏SDK初始化失败");
-                callback.onFailure(error);
-            }
-        });
+                @Override
+                public void onSdkInitFailed() {
+                    Log.d(TAG, "onSdkInitFailed: 小米广告SDK初始化失败 ");
+                    Error error = new Error();
+                    error.setMessage("小米广告SDK初始化失败");
+                    adCallback.onFailure(error);
+                }
+            });
+        } else {
+            Log.d(TAG, "onSdkInitSuccess: isSdkReady true");
+            adCallback.onSuccess();
+        }
     }
+
+    @Override
+    public void initUser(Context context, InitUserCallback userCallback) {
+        Log.d(TAG, "initUser: ");
+        userCallback.onSuccess();
+    }
+
 
     private boolean initConfig(Context context) {
         String idconfig = LocalJsonResolutionUtils.getJson(context, "miidconfig.json");
@@ -183,26 +201,31 @@ public class SMiSDK implements ISGameSDK {
         mAdCallback = callback;
         switch (type) {
             case BANNER:
+                Log.d(TAG, "showAd: BANNER");
                 loadBannerAd((Activity) context);
                 break;
-            case SPLASH_VERTICAL:
+            case SPLASH:
+                Log.d(TAG, "showAd: SPLASH");
                 loadSplashVerticalAd((Activity) context, mSplashVerticalAdId);
                 break;
             case SPLASH_HORIZON:
+                Log.d(TAG, "showAd: SPLASH_HORIZON ");
                 loadSplashVerticalAd((Activity) context, mSplashHorizonAdId);
                 break;
-            case VIDEO_VERTICAL:
-                Log.d(TAG, "showAd: VIDEO_VERTICAL");
+            case VIDEO:
+                Log.d(TAG, "showAd: case VIDEO: VIDEO_VERTICAL");
                 loadVideoVerticalAd((Activity) context, mVideoVerticalAdId);
                 break;
             case VIDEO_HORIZON:
-                Log.d(TAG, "showAd: VIDEO_HORIZON");
+                Log.d(TAG, "showAd: case VIDEO: VIDEO_HORIZON");
                 loadVideoVerticalAd((Activity) context, mVideoHorizonAdId);
                 break;
-            case INSTER_VERTICAL:
+            case INSTER:
+                Log.d(TAG, "showAd: INSTER");
                 loadInsterHorizonAd((Activity) context, mInsterVerticalAdId);
                 break;
             case INSTER_HORIZON:
+                Log.d(TAG, "showAd: INSTER_HORIZON");
                 loadInsterHorizonAd((Activity) context, mInsterHorizonAdId);
                 break;
         }
@@ -214,6 +237,7 @@ public class SMiSDK implements ISGameSDK {
                     .getRewardVideoAdWorker(context, adId, com.xiaomi.ad.common.pojo.AdType.AD_REWARDED_VIDEO);
             mVideoAdWorker.setListener(new RewardVideoListener(mVideoAdWorker));
             mVideoAdWorker.recycle();
+            Log.d(TAG, "loadVideoVerticalAd: mVideoAdWorker.isReady() " + mVideoAdWorker.isReady());
             if (!mVideoAdWorker.isReady()) {
                 mVideoAdWorker.load();
             }
@@ -232,42 +256,49 @@ public class SMiSDK implements ISGameSDK {
 
         @Override
         public void onVideoStart() {
-            Log.d(TAG, "onVideoStart " + " onVideoStart status = " + mAdWorker.getVideoStatus());
+            Log.d(TAG, "RewardVideoListener onVideoStart " + " onVideoStart status = " + mAdWorker.getVideoStatus());
+
         }
 
         @Override
         public void onVideoPause() {
-            Log.d(TAG, "onVideoPause" + " onVideoStart status = " + mAdWorker.getVideoStatus());
+            Log.d(TAG, "RewardVideoListener onVideoPause" + " onVideoStart status = " + mAdWorker.getVideoStatus());
         }
 
         @Override
         public void onVideoComplete() {
-            Log.d(TAG, "onVideoComplete" + " onVideoStart status = " + mAdWorker.getVideoStatus());
+            Log.d(TAG, "RewardVideoListener onVideoComplete" + " onVideoStart status = " + mAdWorker.getVideoStatus());
         }
 
         @Override
         public void onAdPresent() {
-            Log.d(TAG, "onAdPresent" + " onVideoStart status = " + mAdWorker.getVideoStatus() + " onAdPresent isReady = " + mAdWorker.isReady());
+            Log.d(TAG, "RewardVideoListener onAdPresent" + " onVideoStart status = " + mAdWorker.getVideoStatus() + " onAdPresent isReady = " + mAdWorker.isReady());
+            mAdCallback.onPresent();
         }
 
         @Override
         public void onAdClick() {
-            Log.d(TAG, "onAdClick" + mAdWorker.getVideoStatus() + " onAdPresent isReady = " + mAdWorker.isReady());
+            Log.d(TAG, "RewardVideoListener onAdClick" + mAdWorker.getVideoStatus() + " onAdPresent isReady = " + mAdWorker.isReady());
+            mAdCallback.onClick();
         }
 
         @Override
         public void onAdDismissed() {
-            Log.d(TAG, "onAdDismissed" + mAdWorker.getVideoStatus() + " onAdPresent isReady = " + mAdWorker.isReady());
+            Log.d(TAG, "RewardVideoListener onAdDismissed" + mAdWorker.getVideoStatus() + " onAdPresent isReady = " + mAdWorker.isReady());
+            mAdCallback.onDismissed();
         }
 
         @Override
         public void onAdFailed(String message) {
-            Log.e(TAG, "onAdFailed : " + message + " " + mAdWorker.getVideoStatus() + " onAdPresent isReady = " + mAdWorker.isReady());
+            Log.e(TAG, "RewardVideoListener onAdFailed : " + message + " " + mAdWorker.getVideoStatus() + " onAdPresent isReady = " + mAdWorker.isReady());
+            Error error = new Error();
+            error.setMessage(message);
+            mAdCallback.onNoAd(error);
         }
 
         @Override
         public void onAdLoaded(int size) {
-            Log.d(TAG, "onAdLoaded : " + size + " " + mAdWorker.getVideoStatus() + " onAdPresent isReady = " + mAdWorker.isReady());
+            Log.d(TAG, "RewardVideoListener onAdLoaded : " + size + " " + mAdWorker.getVideoStatus() + " onAdPresent isReady = " + mAdWorker.isReady());
             try {
                 mVideoAdWorker.show();
             } catch (Exception e) {
@@ -277,7 +308,7 @@ public class SMiSDK implements ISGameSDK {
 
         @Override
         public void onStimulateSuccess() {
-            Log.d(TAG, "onStimulateSuccess" + mAdWorker.getVideoStatus() + " onAdPresent isReady = " + mAdWorker.isReady());
+            Log.d(TAG, "RewardVideoListener onStimulateSuccess" + mAdWorker.getVideoStatus() + " onAdPresent isReady = " + mAdWorker.isReady());
         }
     }
 
@@ -342,6 +373,7 @@ public class SMiSDK implements ISGameSDK {
             mInsterAdWorker = AdWorkerFactory.getAdWorker(context, (ViewGroup) context.getWindow().getDecorView(), mInsterAdListener, com.xiaomi.ad.common.pojo.AdType.AD_INTERSTITIAL);
 
             mInsterAdWorker.load(adId);
+            Log.d(TAG, "loadInsterHorizonAd: mInsterAdWorker.isReady() " + mInsterAdWorker.isReady());
             if (!mInsterAdWorker.isReady()) {
                 mInsterAdWorker.load(adId);
             }
@@ -399,16 +431,21 @@ public class SMiSDK implements ISGameSDK {
 
 
     private ViewManager mWindowManager;
-    private RelativeLayout mBannerView;
+    private FrameLayout mBannerView;
 
     private void loadBannerAd(Activity activity) {
         if (mBannerView != null && mBannerView.getParent() != null && mWindowManager != null) {
             mWindowManager.removeView(mBannerView);
         }
-        mBannerView = new RelativeLayout(activity);
+        mBannerView = new FrameLayout(activity);
 
-        mBannerView.setLayoutParams(new RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT));
+        FrameLayout.LayoutParams layoutParams1 = new FrameLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        mBannerView.setLayoutParams(layoutParams1);
+
+        //此代码是为了显示广告区域，游戏请根据游戏主题背景决定是否要添加
+//        mBannerView.setBackgroundColor(activity.getResources().getColor(android.R.color.darker_gray));
+
 
         if (null != mBannerView) {
             /**
@@ -432,21 +469,27 @@ public class SMiSDK implements ISGameSDK {
                 @Override
                 public void onAdPresent() {
                     Log.e(TAG, "loadBannerAd onAdPresent");
+                    mAdCallback.onPresent();
                 }
 
                 @Override
                 public void onAdClick() {
                     Log.e(TAG, "loadBannerAd onAdClick");
+                    mAdCallback.onClick();
                 }
 
                 @Override
                 public void onAdDismissed() {
                     Log.d(TAG, "loadBannerAd onAdDismissed: ");
+                    mAdCallback.onDismissed();
                 }
 
                 @Override
                 public void onAdFailed(String s) {
                     Log.d(TAG, "loadBannerAd onAdFailed: " + s);
+                    Error error = new Error();
+                    error.setMessage(s);
+                    mAdCallback.onNoAd(error);
                 }
 
                 @Override
@@ -467,6 +510,42 @@ public class SMiSDK implements ISGameSDK {
 
     @Override
     public void hindAd(AdTypeHind type) {
+        switch (type) {
+            case BANNER:
+                if (mBannerView != null && mBannerView.getVisibility() != View.GONE) {
+                    mBannerView.setVisibility(View.GONE); //// 若需要默认横幅广告不展示
+                }
+                break;
+        }
+    }
+
+    @Override
+    public void login(Context context, IUserApiCallback iUserApiCallback) {
 
     }
+
+    @Override
+    public void logout(Context context, IUserApiCallback iUserApiCallback) {
+
+    }
+
+    /**
+     *  APP_KEY和APP_TOKEN则直接传入"fake_app_key","fake_app_token",传空会报错。
+     * {
+     *   "message": "小米广告SDK参数",
+     *   "data": {
+     *     "appId": "2882303761517411490",
+     *     "appKey": "appKey",
+     *     "appToken": "appToken",
+     *     "splashVerticalAdId": "b373ee903da0c6fc9c9da202df95a500",
+     *     "splashHorizonAdId": "94f4805a2d50ba6e853340f9035fda18",
+     *     "videoVerticalAdId": "92d90db71791e6b9f7caaf46e4a997ec",
+     *     "videoHorizonAdId": "17853953c5adafd100f24cd747edd6b7",
+     *     "bannerAdId": "802e356f1726f9ff39c69308bfd6f06a",
+     *     "insterVerticalAdId": "67b05e7cc9533510d4b8d9d4d78d0ae9",
+     *     "insterHorizonAdId": "1d576761b7701d436f5a9253e7cf9572"
+     *   },
+     *   "code": "0"
+     * }
+     */
 }

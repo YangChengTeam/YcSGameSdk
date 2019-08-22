@@ -1,5 +1,6 @@
 package com.ymm.miui;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -10,7 +11,7 @@ import com.yc.adsdk.core.AdType;
 import com.yc.adsdk.core.Error;
 import com.yc.adsdk.core.SAdSDK;
 
-public class MiSplashHorizonActivity extends AppCompatActivity {
+public class MiSplashHorizonActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -1,15 +1,15 @@
 {
   "message": "小米广告SDK参数",
   "data": {
-    "appId": "2882303761517411490",
+    "appId": "2882303761518131182",
     "appKey": "appKey",
     "appToken": "appToken",
-    "splashVerticalAdId": "b373ee903da0c6fc9c9da202df95a500",
+    "splashVerticalAdId": "686225be57c8fed008db8f274d08a387",
     "splashHorizonAdId": "94f4805a2d50ba6e853340f9035fda18",
-    "videoVerticalAdId": "92d90db71791e6b9f7caaf46e4a997ec",
+    "videoVerticalAdId": "56da83da2e1515513641ff30e43c0a4d",
     "videoHorizonAdId": "17853953c5adafd100f24cd747edd6b7",
-    "bannerAdId": "802e356f1726f9ff39c69308bfd6f06a",
-    "insterVerticalAdId": "67b05e7cc9533510d4b8d9d4d78d0ae9",
+    "bannerAdId": "eca82947865af6e3d746beec68b9ebf4",
+    "insterVerticalAdId": "9e44cb3c76bf41da115864dcc738e98a",
     "insterHorizonAdId": "1d576761b7701d436f5a9253e7cf9572"
   },
   "code": "0"

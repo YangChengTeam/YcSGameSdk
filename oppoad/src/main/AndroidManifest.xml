@@ -22,6 +22,12 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <!--SDK 可选权限配置结束-->
 
+    <!--OPPO 游戏中心_SDK begin-->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <!--OPPO 游戏中心_SDK end-->
+
+
     <application>
 
 
@@ -38,6 +44,24 @@
         <!--若出现激励视频黑屏，可加上硬件加速配置-->
         <!--android:hardwareAccelerated=”true”-->
         <!--SDK 必选组件配置结束-->
+
+        <!--  OPPO 游戏中心_SDK nearme game sdk config goes here -->
+        <meta-data android:name="debug_mode" android:value="false" />    <!-- 日志开关，发布时候设置为false -->
+        <meta-data android:name="is_offline_game" android:value="true" />  <!-- true:单机游戏   false:网游 -->
+        <meta-data android:name="app_key" android:value="36c794d8b4834481a6399e40ac993a80" />  <!-- appKey -->
+
+        <activity
+            android:name="com.nearme.game.sdk.component.proxy.ProxyActivity"
+            android:theme="@style/Theme_Dialog_Custom"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:process=":gcsdk">
+        </activity>
+        <service
+            android:name="com.nearme.game.sdk.component.proxy.ProxyApiService"
+            android:process=":gcsdk"
+            android:priority="1000">
+        </service>
+        <!-- OPPO 游戏中心_SDK nearme game sdk config end -->
 
     </application>
 
