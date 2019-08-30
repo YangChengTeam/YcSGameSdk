@@ -30,6 +30,11 @@ public class OppoMainActivity extends Activity implements View.OnClickListener {
         initUser();
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
+
     private void initUser() {
         SAdSDK.getImpl().initUser(this, new InitUserCallback() {
             @Override

@@ -1,16 +1,17 @@
 {
-  "message": "小米广告SDK参数",
+  "message": "小米广告SDK参数-部分正式-疯狂飞刀之僵尸农场",
   "data": {
-    "appId": "2882303761518131182",
+    "appId": "2882303761518141674",
     "appKey": "appKey",
     "appToken": "appToken",
     "splashVerticalAdId": "686225be57c8fed008db8f274d08a387",
     "splashHorizonAdId": "94f4805a2d50ba6e853340f9035fda18",
-    "videoVerticalAdId": "56da83da2e1515513641ff30e43c0a4d",
+    "videoVerticalAdId": "7b6419fb7345fe748ce80cfd4f357efb",
     "videoHorizonAdId": "17853953c5adafd100f24cd747edd6b7",
-    "bannerAdId": "eca82947865af6e3d746beec68b9ebf4",
+    "bannerAdId": "1e96d5ee1374835dbd1c2c9e7f201b00",
     "insterVerticalAdId": "9e44cb3c76bf41da115864dcc738e98a",
-    "insterHorizonAdId": "1d576761b7701d436f5a9253e7cf9572"
+    "insterHorizonAdId": "1d576761b7701d436f5a9253e7cf9572",
+    "umengAppKey": "5d65e94d4ca357f9b8000b3c"
   },
   "code": "0"
 }

@@ -28,6 +28,13 @@
     <!--OPPO 游戏中心_SDK end-->
 
 
+    <!--SDK umeng U-App begin -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!--SDK umeng U-App end -->
+
+
     <application>
 
 

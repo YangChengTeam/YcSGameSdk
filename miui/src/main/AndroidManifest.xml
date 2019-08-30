@@ -5,29 +5,11 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:allowBackup">
-        <activity
-            android:name=".MiMainHorizontalActivity"
-            android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
-            android:screenOrientation="landscape"
-            android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen"></activity>
-        <activity
-            android:name=".MiSplashHorizonActivity"
-            android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
-            android:screenOrientation="landscape"
-            android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen" />
-        <activity android:name=".MiMainActivity" /> <!-- activity的 android:screenOrientation 竖版设置为 "portrait" -->
-        <!-- android:screenOrientation="landscape" -->
-        <activity
-            android:name=".MiSplashActivity"
-            android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
-            android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen">
+        <activity android:name="com.ymm.MiMainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

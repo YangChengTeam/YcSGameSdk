@@ -20,6 +20,8 @@ import com.miui.zeus.mimo.sdk.ad.IRewardVideoAdWorker;
 import com.miui.zeus.mimo.sdk.api.IMimoSdkListener;
 import com.miui.zeus.mimo.sdk.listener.MimoAdListener;
 import com.miui.zeus.mimo.sdk.listener.MimoRewardVideoListener;
+import com.umeng.analytics.MobclickAgent;
+import com.umeng.commonsdk.UMConfigure;
 import com.yc.adsdk.core.AdCallback;
 import com.yc.adsdk.core.AdType;
 import com.yc.adsdk.core.AdTypeHind;
@@ -54,6 +56,7 @@ public class SMiSDK implements ISGameSDK {
     private String mInsterHorizonAdId;
     private AdCallback mAdCallback;
     private IRewardVideoAdWorker mVideoAdWorker;
+    private String mUmengAppKey;
 
     public static SMiSDK getImpl() {
         if (sAdSDK == null) {
@@ -71,14 +74,20 @@ public class SMiSDK implements ISGameSDK {
         if (!initConfig(context)) {
             return;
         }
+
         Log.d(TAG, "initAd: mAppId " + mAppId + " mAppKey " + mAppKey + " mBannerAdId " + mBannerAdId + " mInsterHorizonAdId " + mInsterHorizonAdId
                 + " mInsterVerticalAdId " + mInsterVerticalAdId + " mAppToken " + mAppToken + " mSplashHorizonAdId " + mSplashHorizonAdId + " mSplashVerticalAdId " + mSplashVerticalAdId
-                + " mVideoHorizonAdId " + mVideoHorizonAdId + " mVideoHorizonAdId " + mVideoHorizonAdId);
+                + " mVideoHorizonAdId " + mVideoHorizonAdId + " mVideoHorizonAdId " + mVideoHorizonAdId+" mUmengAppKey "+mUmengAppKey);
+
+        UMConfigure.init(context, mUmengAppKey, "Umeng", UMConfigure.DEVICE_TYPE_PHONE, null);
+        // 选用AUTO页面采集模式
+        MobclickAgent.setPageCollectionMode(MobclickAgent.PageMode.AUTO);
+
         Log.d(TAG, "init: MimoSdk.isSdkReady() " + MimoSdk.isSdkReady());
         if (!MimoSdk.isSdkReady()) {
             // 正式上线时候务必关闭stage和debug
             MimoSdk.setDebugOn();
-            MimoSdk.setStageOn();
+//            MimoSdk.setStageOn();
 
             // 如需要在本地预置插件,请在assets目录下添加mimo_asset.apk;
             MimoSdk.init(context, mAppId, mAppKey, mAppToken, new IMimoSdkListener() {
@@ -181,6 +190,13 @@ public class SMiSDK implements ISGameSDK {
                 mInsterHorizonAdId = data.getString("insterHorizonAdId");
                 if (TextUtils.isEmpty(mInsterHorizonAdId)) {
                     Toast.makeText(context, "初始化失败，缺少广告必须参数 insterHorizonAdId", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+            }
+            if (data.has("umengAppKey")) {
+                mUmengAppKey = data.getString("umengAppKey");
+                if (TextUtils.isEmpty(mUmengAppKey)) {
+                    Toast.makeText(context, "初始化失败，缺少广告必须参数 userAppId", Toast.LENGTH_SHORT).show();
                     return false;
                 }
             }
@@ -494,7 +510,7 @@ public class SMiSDK implements ISGameSDK {
 
                 @Override
                 public void onAdLoaded(int size) {
-                    Log.d(TAG, "loadBannerAd onAdLoaded: " + size);
+                    Log.d(TAG, "loadBannerAd onAdLoaded: size " + size);
                 }
 
                 @Override
@@ -529,23 +545,98 @@ public class SMiSDK implements ISGameSDK {
 
     }
 
-    /**
-     *  APP_KEY和APP_TOKEN则直接传入"fake_app_key","fake_app_token",传空会报错。
-     * {
-     *   "message": "小米广告SDK参数",
-     *   "data": {
-     *     "appId": "2882303761517411490",
-     *     "appKey": "appKey",
-     *     "appToken": "appToken",
-     *     "splashVerticalAdId": "b373ee903da0c6fc9c9da202df95a500",
-     *     "splashHorizonAdId": "94f4805a2d50ba6e853340f9035fda18",
-     *     "videoVerticalAdId": "92d90db71791e6b9f7caaf46e4a997ec",
-     *     "videoHorizonAdId": "17853953c5adafd100f24cd747edd6b7",
-     *     "bannerAdId": "802e356f1726f9ff39c69308bfd6f06a",
-     *     "insterVerticalAdId": "67b05e7cc9533510d4b8d9d4d78d0ae9",
-     *     "insterHorizonAdId": "1d576761b7701d436f5a9253e7cf9572"
-     *   },
-     *   "code": "0"
-     * }
-     */
+     /*APP_KEY和APP_TOKEN则直接传入"fake_app_key","fake_app_token",传空会报错。
+    {
+      "message": "小米广告SDK参数-测试id",
+      "data": {
+        "appId": "2882303761517411490",
+        "appKey": "appKey",
+        "appToken": "appToken",
+        "splashVerticalAdId": "b373ee903da0c6fc9c9da202df95a500",
+        "splashHorizonAdId": "94f4805a2d50ba6e853340f9035fda18",
+        "videoVerticalAdId": "92d90db71791e6b9f7caaf46e4a997ec",
+        "videoHorizonAdId": "17853953c5adafd100f24cd747edd6b7",
+        "bannerAdId": "802e356f1726f9ff39c69308bfd6f06a",
+        "insterVerticalAdId": "67b05e7cc9533510d4b8d9d4d78d0ae9",
+        "insterHorizonAdId": "1d576761b7701d436f5a9253e7cf9572"
+      },
+      "code": "0"
+    }*/
+
+
+    /*
+     real
+     {
+       "message": "小米广告SDK参数-部分正式",
+       "data": {
+         "appId": "2882303761518131182",
+         "appKey": "appKey",
+         "appToken": "appToken",
+         "splashVerticalAdId": "686225be57c8fed008db8f274d08a387",
+         "splashHorizonAdId": "94f4805a2d50ba6e853340f9035fda18",
+         "videoVerticalAdId": "56da83da2e1515513641ff30e43c0a4d",
+         "videoHorizonAdId": "17853953c5adafd100f24cd747edd6b7",
+         "bannerAdId": "eca82947865af6e3d746beec68b9ebf4",
+         "insterVerticalAdId": "9e44cb3c76bf41da115864dcc738e98a",
+         "insterHorizonAdId": "1d576761b7701d436f5a9253e7cf9572"
+       },
+       "code": "0"
+     }*/
+
+
+    /*
+     跳跃吧邦尼
+     "data": {
+        "appId": "2882303761518131182",
+        "appKey": "appKey",
+        "appToken": "appToken",
+        "splashVerticalAdId": "686225be57c8fed008db8f274d08a387",
+        "splashHorizonAdId": "94f4805a2d50ba6e853340f9035fda18",
+        "videoVerticalAdId": "56da83da2e1515513641ff30e43c0a4d",
+        "videoHorizonAdId": "17853953c5adafd100f24cd747edd6b7",
+        "bannerAdId": "eca82947865af6e3d746beec68b9ebf4",
+        "insterVerticalAdId": "9e44cb3c76bf41da115864dcc738e98a",
+        "insterHorizonAdId": "1d576761b7701d436f5a9253e7cf9572",
+        "umengAppKey": "5d65e98a4ca357f9b8000b6a"
+      }
+    */
+
+   /*
+  {
+        "message": "小米广告SDK参数-部分正式-疯狂飞刀之僵尸农场",
+            "data": {
+      "appId": "2882303761518141674",
+      "appKey": "appKey",
+      "appToken": "appToken",
+      "splashVerticalAdId": "686225be57c8fed008db8f274d08a387",
+      "splashHorizonAdId": "94f4805a2d50ba6e853340f9035fda18",
+      "videoVerticalAdId": "7b6419fb7345fe748ce80cfd4f357efb",
+      "videoHorizonAdId": "17853953c5adafd100f24cd747edd6b7",
+      "bannerAdId": "1e96d5ee1374835dbd1c2c9e7f201b00",
+      "insterVerticalAdId": "9e44cb3c76bf41da115864dcc738e98a",
+      "insterHorizonAdId": "1d576761b7701d436f5a9253e7cf9572",
+      "umengAppKey": "5d65e94d4ca357f9b8000b3c"
+      },
+        "code": "0"
+    }*/
+/*
+    {
+        "message": "小米广告SDK参数-部分正式-末日打僵尸",
+            "data": {
+        "appId": "2882303761518141670",
+                "appKey": "appKey",
+                "appToken": "appToken",
+                "splashVerticalAdId": "686225be57c8fed008db8f274d08a387",
+                "splashHorizonAdId": "94f4805a2d50ba6e853340f9035fda18",
+                "videoVerticalAdId": "11b3a8ba152fbb16ced1edfee2cf5a5b",
+                "videoHorizonAdId": "17853953c5adafd100f24cd747edd6b7",
+                "bannerAdId": "9278041c3fe77af66665f863e1f73e4c",
+                "insterVerticalAdId": "9e44cb3c76bf41da115864dcc738e98a",
+                "insterHorizonAdId": "1d576761b7701d436f5a9253e7cf9572",
+                "umengAppKey": "5d65e94d4ca357f9b8000b3c"
+    },
+        "code": "0"
+    }*/
+
+
 }

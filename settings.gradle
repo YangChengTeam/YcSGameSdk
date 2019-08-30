@@ -1,1 +1,1 @@
-include ':app', ':oppoad', ':oppoui',':oppouireal', ':ucad', ':ucui', ':nop', ':ttad', ':ttui', ':miad', ':miui', ':nopui', ':miuifact'
+include ':app', ':oppoad', ':oppoui',':oppouireal', ':ucad', ':ucui', ':nop', ':ttad', ':ttui', ':miad', ':miui', ':nopui', ':miuifact', ':googleui', ':googlead', ':miuireal2', ':googleuireal'

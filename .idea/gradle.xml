@@ -9,9 +9,13 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/googlead" />
+            <option value="$PROJECT_DIR$/googleui" />
+            <option value="$PROJECT_DIR$/googleuireal" />
             <option value="$PROJECT_DIR$/miad" />
             <option value="$PROJECT_DIR$/miui" />
             <option value="$PROJECT_DIR$/miuifact" />
+            <option value="$PROJECT_DIR$/miuireal2" />
             <option value="$PROJECT_DIR$/nop" />
             <option value="$PROJECT_DIR$/nopui" />
             <option value="$PROJECT_DIR$/oppoad" />

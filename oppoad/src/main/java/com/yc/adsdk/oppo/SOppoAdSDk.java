@@ -18,6 +18,7 @@ import com.nearme.game.sdk.callback.ApiCallback;
 import com.nearme.game.sdk.callback.GameExitCallback;
 import com.nearme.game.sdk.callback.SinglePayCallback;
 import com.nearme.game.sdk.common.model.biz.PayInfo;
+import com.nearme.game.sdk.common.util.AppUtil;
 import com.nearme.platform.opensdk.pay.PayResponse;
 import com.oppo.mobad.api.InitParams;
 import com.oppo.mobad.api.MobAdManager;
@@ -32,6 +33,8 @@ import com.oppo.mobad.api.listener.IRewardVideoAdListener;
 import com.oppo.mobad.api.listener.ISplashAdListener;
 import com.oppo.mobad.api.params.RewardVideoAdParams;
 import com.oppo.mobad.api.params.SplashAdParams;
+import com.umeng.analytics.MobclickAgent;
+import com.umeng.commonsdk.UMConfigure;
 import com.yc.adsdk.core.AdCallback;
 import com.yc.adsdk.core.AdType;
 import com.yc.adsdk.core.AdTypeHind;
@@ -67,6 +70,8 @@ public class SOppoAdSDk implements ISGameSDK {
     private String mUserAppAecret;
     private boolean mIsInitAd = false;
     private boolean mIsInitUser = false;
+    private Context context;
+    private String mUmengAppKey;
 
 
     public static SOppoAdSDk getImpl() {
@@ -128,11 +133,19 @@ public class SOppoAdSDk implements ISGameSDK {
                 initSdkUser(context, userCallback);
             }
         }
+
     }
 
     private void initSdkAd(final Context context, final InitAdCallback adCallback) {
+        if (!initConfig(context, adCallback != null,false)) {
+            return;
+        }
+        UMConfigure.init(context, mUmengAppKey, "Umeng", UMConfigure.DEVICE_TYPE_PHONE, null);
+        // 选用AUTO页面采集模式
+        MobclickAgent.setPageCollectionMode(MobclickAgent.PageMode.AUTO);
+
         InitParams initParams = new InitParams.Builder()
-                .setDebug(true)//true打开SDK日志，当应用发布Release版本时，必须注释掉这行代码的调用，或者设为false
+                .setDebug(false)//true打开SDK日志，当应用发布Release版本时，必须注释掉这行代码的调用，或者设为false
                 .build();
 
 
@@ -187,11 +200,12 @@ public class SOppoAdSDk implements ISGameSDK {
     }
 
     @Override
-    public void logout(Context context, final IUserApiCallback iUserApiCallback) {
+    public void logout(final Context context, final IUserApiCallback iUserApiCallback) {
         GameCenterSDK.getInstance().onExit((Activity) context, new GameExitCallback() {
             @Override
             public void exitGame() {
                 iUserApiCallback.onSuccess("游戏账号已退出");
+                AppUtil.exitGameProcess(context);
             }
         });
     }
@@ -243,6 +257,13 @@ public class SOppoAdSDk implements ISGameSDK {
         try {
             JSONObject jsonObject = new JSONObject(idconfig);
             JSONObject data = jsonObject.getJSONObject("data");
+            if (data.has("umengAppKey")) {
+                mUmengAppKey = data.getString("umengAppKey");
+                if (TextUtils.isEmpty(mUmengAppKey)) {
+                    Toast.makeText(context, "初始化失败，缺少广告必须参数 userAppId", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+            }
             if (isAddInitAdCallback) {
                 if (data.has("appId")) {
                     mAppId = data.getString("appId");
@@ -311,6 +332,7 @@ public class SOppoAdSDk implements ISGameSDK {
     @Override
     public void showAd(Context context, AdType type, AdCallback callback, ViewGroup viewGroup) {
         this.mAdCallback = callback;
+        this.context=context;
         switch (type) {
             case BANNER:
                 loadBannerAd((Activity) context);
@@ -443,6 +465,7 @@ public class SOppoAdSDk implements ISGameSDK {
             Error error = new Error();
             error.setMessage(s);
             mAdCallback.onNoAd(error);
+            Toast.makeText(context, "广告暂未准备好", Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -468,6 +491,7 @@ public class SOppoAdSDk implements ISGameSDK {
             Error error = new Error();
             error.setMessage(s);
             mAdCallback.onNoAd(error);
+            Toast.makeText(context, "广告暂未准备好", Toast.LENGTH_SHORT).show();
         }
 
         @Override

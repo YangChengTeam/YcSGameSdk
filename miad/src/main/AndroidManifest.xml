@@ -29,9 +29,11 @@
             android:hardwareAccelerated="true"
             android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen" />
 
+        <!--   android:authorities="${applicationId}.fileprovider"-->
+        <!--android:authorities="com.whsjlgame.knifezombie.mi.fileprovider"-->
         <provider
             android:name="android.support.v4.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
+            android:authorities="com.whsjlgame.knifezombie.mi.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

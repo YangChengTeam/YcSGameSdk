@@ -3,16 +3,26 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 28
+    signingConfigs {
+        release {
+            storeFile file('D:\\app_key_store\\game_oppo.jks')
+            storePassword "ychl888"
+            keyAlias "zzx2"
+            keyPassword "ychl888"
+        }
 
+    }
 
     defaultConfig {
         applicationId "com.whsjlgame.zzx2.nearme.gamecenter"
         minSdkVersion 15
         targetSdkVersion 28
-        versionCode 1
+        versionCode 3
         versionName "1.0"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        maxSdkVersion 28
+        signingConfig signingConfigs.release
 
     }
 
@@ -22,6 +32,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+    buildToolsVersion = '28.0.3'
 
 }
 
