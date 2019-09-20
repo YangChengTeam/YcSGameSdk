@@ -176,5 +176,22 @@ public class OppoMainRealActivity extends Activity implements View.OnClickListen
             }
         });
     }
+
+    @Override
+    public void onBackPressed() {
+        Log.d(TAG, "onBackPressed: ");
+        SAdSDK.getImpl().logout(OppoMainRealActivity.this, new IUserApiCallback() {
+            @Override
+            public void onSuccess(String msg) {
+                Log.d(TAG, "onSuccess: ");
+            }
+
+            @Override
+            public void onFailure(String msg, int code) {
+                Log.d(TAG, "onFailure: ");
+            }
+        });
+//        super.onBackPressed();
+    }
 }
 

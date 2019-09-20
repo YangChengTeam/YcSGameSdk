@@ -55,7 +55,9 @@ public abstract class BasePermissionActivity extends Activity {
             List<String> mustPermissions = PermissionHelpUtils.getMustPermissions();
             List<String> notMustPermissions = PermissionHelpUtils.getNotMustPermissions();
             allPermissions.addAll(mustPermissions);
-            allPermissions.addAll(notMustPermissions);
+            if (notMustPermissions != null) {
+                allPermissions.addAll(notMustPermissions);
+            }
             // 请求所缺少的权限，在onRequestPermissionsResult中再看是否获得权限，如果获得权限就可以调用SDK，否则不要调用SDK。
             String[] requestPermissions = new String[allPermissions.size()];
             allPermissions.toArray(requestPermissions);

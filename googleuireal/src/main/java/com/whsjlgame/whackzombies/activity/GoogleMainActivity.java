@@ -1,8 +1,6 @@
 package com.whsjlgame.whackzombies.activity;
 
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
 
@@ -16,12 +14,14 @@ import com.yc.adsdk.core.SAdSDK;
 import com.yc.adsdk.ui.BasePermissionActivity;
 
 public class GoogleMainActivity extends BasePermissionActivity implements View.OnClickListener {
-    private static final String TAG = "GameSdkLog";
+    private String TAG = "GameSdkLog_GoogleMainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.activity_google_main);
         super.onCreate(savedInstanceState);
+
+
     }
 
     @Override
@@ -39,17 +39,8 @@ public class GoogleMainActivity extends BasePermissionActivity implements View.O
         });
 
         initViews();
-
-
-        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-            @Override
-            public void run() {
-
-            }
-        }, 2000);
-
-
     }
+
 
     private void initViews() {
         Button banner = findViewById(R.id.google_btn_banner);
@@ -125,4 +116,21 @@ public class GoogleMainActivity extends BasePermissionActivity implements View.O
             }
         });
     }
+
+   /* @Override
+    public void onBackPressed() {
+        Log.d(TAG, "onBackPressed: ");
+        SAdSDK.getImpl().logout(GoogleMainActivity.this, new IUserApiCallback() {
+            @Override
+            public void onSuccess(String msg) {
+                Log.d(TAG, "onSuccess: ");
+            }
+
+            @Override
+            public void onFailure(String msg, int code) {
+                Log.d(TAG, "onFailure: ");
+            }
+        });
+//        super.onBackPressed();
+    }*/
 }

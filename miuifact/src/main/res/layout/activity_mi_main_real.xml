@@ -53,4 +53,12 @@
         android:text="竖屏插屏" />
 
 
+    <Button
+        android:id="@+id/btn_logout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:gravity="center"
+        android:text="logout" />
+
 </LinearLayout>

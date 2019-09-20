@@ -68,12 +68,12 @@ public class SAdSDK implements ISGameSDK {
 
     @Override
     public void login(Context context, IUserApiCallback iUserApiCallback) {
-
+        SMiSDK.getImpl().login(context,iUserApiCallback);
     }
 
     @Override
     public void logout(Context context, IUserApiCallback iUserApiCallback) {
-
+        SMiSDK.getImpl().logout(context,iUserApiCallback);
     }
 
     private void openSettingGivePermission(Context context) {

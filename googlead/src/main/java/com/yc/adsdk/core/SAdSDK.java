@@ -45,12 +45,12 @@ public class SAdSDK implements ISGameSDK {
 
     @Override
     public void showAd(Context context, AdType type, AdCallback callback, ViewGroup viewGroup) {
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (!PermissionHelpUtils.checkMustPermissions(context)) {
-//                openSettingGivePermission(context);
-                return;
-            }
-        }
+//        if (Build.VERSION.SDK_INT >= 23) {
+//            if (!PermissionHelpUtils.checkMustPermissions(context)) {
+////                openSettingGivePermission(context);
+//                return;
+//            }
+//        }
         SGoogleAdSDk.getImpl().showAd(context, type, callback);
     }
 

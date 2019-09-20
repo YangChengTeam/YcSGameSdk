@@ -1,7 +1,9 @@
 package com.yc.adsdk.mi;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
@@ -31,6 +33,7 @@ import com.yc.adsdk.core.IUserApiCallback;
 import com.yc.adsdk.core.InitAdCallback;
 import com.yc.adsdk.core.InitUserCallback;
 import com.yc.adsdk.utils.LocalJsonResolutionUtils;
+import com.yc.adsdk.utils.SAppUtil;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -57,6 +60,7 @@ public class SMiSDK implements ISGameSDK {
     private AdCallback mAdCallback;
     private IRewardVideoAdWorker mVideoAdWorker;
     private String mUmengAppKey;
+    private String mUmengChannel;
 
     public static SMiSDK getImpl() {
         if (sAdSDK == null) {
@@ -77,16 +81,16 @@ public class SMiSDK implements ISGameSDK {
 
         Log.d(TAG, "initAd: mAppId " + mAppId + " mAppKey " + mAppKey + " mBannerAdId " + mBannerAdId + " mInsterHorizonAdId " + mInsterHorizonAdId
                 + " mInsterVerticalAdId " + mInsterVerticalAdId + " mAppToken " + mAppToken + " mSplashHorizonAdId " + mSplashHorizonAdId + " mSplashVerticalAdId " + mSplashVerticalAdId
-                + " mVideoHorizonAdId " + mVideoHorizonAdId + " mVideoHorizonAdId " + mVideoHorizonAdId+" mUmengAppKey "+mUmengAppKey);
+                + " mVideoHorizonAdId " + mVideoHorizonAdId + " mVideoHorizonAdId " + mVideoHorizonAdId + " mUmengAppKey " + mUmengAppKey + " mUmengChannel " + mUmengChannel);
 
-        UMConfigure.init(context, mUmengAppKey, "Umeng", UMConfigure.DEVICE_TYPE_PHONE, null);
+        UMConfigure.init(context, mUmengAppKey, mUmengChannel, UMConfigure.DEVICE_TYPE_PHONE, null);
         // 选用AUTO页面采集模式
         MobclickAgent.setPageCollectionMode(MobclickAgent.PageMode.AUTO);
 
         Log.d(TAG, "init: MimoSdk.isSdkReady() " + MimoSdk.isSdkReady());
         if (!MimoSdk.isSdkReady()) {
             // 正式上线时候务必关闭stage和debug
-            MimoSdk.setDebugOn();
+//            MimoSdk.setDebugOn();
 //            MimoSdk.setStageOn();
 
             // 如需要在本地预置插件,请在assets目录下添加mimo_asset.apk;
@@ -196,7 +200,14 @@ public class SMiSDK implements ISGameSDK {
             if (data.has("umengAppKey")) {
                 mUmengAppKey = data.getString("umengAppKey");
                 if (TextUtils.isEmpty(mUmengAppKey)) {
-                    Toast.makeText(context, "初始化失败，缺少广告必须参数 userAppId", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "初始化失败，缺少广告必须参数 umengAppKey", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+            }
+            if (data.has("umengChannel")) {
+                mUmengChannel = data.getString("umengChannel");
+                if (TextUtils.isEmpty(mUmengChannel)) {
+                    Toast.makeText(context, "初始化失败，缺少广告必须参数 mUmengChannel", Toast.LENGTH_SHORT).show();
                     return false;
                 }
             }
@@ -541,8 +552,19 @@ public class SMiSDK implements ISGameSDK {
     }
 
     @Override
-    public void logout(Context context, IUserApiCallback iUserApiCallback) {
-
+    public void logout(final Context context, final IUserApiCallback iUserApiCallback) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("退出游戏");
+        builder.setMessage("不再玩一会了吗？");
+        builder.setNegativeButton("取消", null);
+        builder.setPositiveButton("退出", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                iUserApiCallback.onSuccess("游戏账号已退出");
+                SAppUtil.exitGameProcess(context);
+            }
+        });
+        builder.create().show();
     }
 
      /*APP_KEY和APP_TOKEN则直接传入"fake_app_key","fake_app_token",传空会报错。
@@ -610,7 +632,7 @@ public class SMiSDK implements ISGameSDK {
       "appToken": "appToken",
       "splashVerticalAdId": "686225be57c8fed008db8f274d08a387",
       "splashHorizonAdId": "94f4805a2d50ba6e853340f9035fda18",
-      "videoVerticalAdId": "7b6419fb7345fe748ce80cfd4f357efb",
+      "videoVerticalAdId": "c8c470fd8dcb9bbff8ae75cc86c0442e",
       "videoHorizonAdId": "17853953c5adafd100f24cd747edd6b7",
       "bannerAdId": "1e96d5ee1374835dbd1c2c9e7f201b00",
       "insterVerticalAdId": "9e44cb3c76bf41da115864dcc738e98a",
@@ -633,10 +655,27 @@ public class SMiSDK implements ISGameSDK {
                 "bannerAdId": "9278041c3fe77af66665f863e1f73e4c",
                 "insterVerticalAdId": "9e44cb3c76bf41da115864dcc738e98a",
                 "insterHorizonAdId": "1d576761b7701d436f5a9253e7cf9572",
-                "umengAppKey": "5d65e94d4ca357f9b8000b3c"
+                "umengAppKey": "5d65e98a4ca357f9b8000b6a"
     },
         "code": "0"
     }*/
 
+    /*{
+        "message": "小米广告SDK参数-部分正式-猪小弟FC",
+            "data": {
+        "appId": "2882303761518142414",
+                "appKey": "appKey",
+                "appToken": "appToken",
+                "splashVerticalAdId": "686225be57c8fed008db8f274d08a387",
+                "splashHorizonAdId": "94f4805a2d50ba6e853340f9035fda18",
+                "videoVerticalAdId": "1cb2386f26b141a3590782720721b03d",
+                "videoHorizonAdId": "17853953c5adafd100f24cd747edd6b7",
+                "bannerAdId": "dd15ae6ded64268881da490393e88eb0",
+                "insterVerticalAdId": "9e44cb3c76bf41da115864dcc738e98a",
+                "insterHorizonAdId": "1d576761b7701d436f5a9253e7cf9572",
+                "umengAppKey": "5d65ea393fc1955a6c000bf4"
+    },
+        "code": "0"
+    }*/
 
 }

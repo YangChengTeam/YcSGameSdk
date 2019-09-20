@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "287674824389",
+    "firebase_url": "https://kcd-33c4d.firebaseio.com",
+    "project_id": "kcd-33c4d",
+    "storage_bucket": "kcd-33c4d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:287674824389:android:f744d43915e2ee9dd162ac",
+        "android_client_info": {
+          "package_name": "com.whsjlgame.whackzombies"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "287674824389-209mp6beus02c5tinsirpc3oo92lklks.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8F1ayqPM_lvyTbMuDJppRw26mCrDNdvY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "287674824389-209mp6beus02c5tinsirpc3oo92lklks.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

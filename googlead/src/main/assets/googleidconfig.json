@@ -1,9 +1,13 @@
 {
-  "message": "google广告SDK参数-测试",
+  "message": "google广告SDK参数",
   "data": {
-    "umengAppKey": "5d65e98a4ca357f9b8000b6a",
-    "videoAdId": "ca-app-pub-3940256099942544/5224354917",
-    "bannerAdId": "ca-app-pub-3940256099942544/6300978111"
+    "videoAdId": "ca-app-pub-5223248037916302/6885409760",
+    "bannerAdId": "ca-app-pub-5223248037916302/5608481958",
+    "mintegralAppKey": "1e9b75371402d7f4b04978c0ae6eb93a",
+    "mintegralAppId": "119193",
+    "mintegralRewardedVideoUnitId": "151242",
+    "umengAppKey": "5d7f5e42570df3d74f000da9",
+    "umengChannel": "google"
   },
   "code": "0"
 }

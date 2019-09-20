@@ -36,7 +36,9 @@
 
 
     <application>
-
+        <uses-library
+            android:name="org.apache.http.legacy"
+            android:required="false" />
 
         <!--SDK 必选组件配置开始-->
         <activity android:name="com.oppo.mobad.activity.AdActivity" />
@@ -53,21 +55,25 @@
         <!--SDK 必选组件配置结束-->
 
         <!--  OPPO 游戏中心_SDK nearme game sdk config goes here -->
-        <meta-data android:name="debug_mode" android:value="false" />    <!-- 日志开关，发布时候设置为false -->
-        <meta-data android:name="is_offline_game" android:value="true" />  <!-- true:单机游戏   false:网游 -->
-        <meta-data android:name="app_key" android:value="36c794d8b4834481a6399e40ac993a80" />  <!-- appKey -->
+        <meta-data
+            android:name="debug_mode"
+            android:value="false" />    <!-- 日志开关，发布时候设置为false -->
+        <meta-data
+            android:name="is_offline_game"
+            android:value="true" />  <!-- true:单机游戏   false:网游 -->
+        <meta-data
+            android:name="app_key"
+            android:value="e11b1bcf73ba4be8ae8b320e7eb2a7a5" />  <!-- appKey -->
 
         <activity
             android:name="com.nearme.game.sdk.component.proxy.ProxyActivity"
-            android:theme="@style/Theme_Dialog_Custom"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:process=":gcsdk">
-        </activity>
+            android:process=":gcsdk"
+            android:theme="@style/Theme_Dialog_Custom"></activity>
         <service
             android:name="com.nearme.game.sdk.component.proxy.ProxyApiService"
-            android:process=":gcsdk"
-            android:priority="1000">
-        </service>
+            android:priority="1000"
+            android:process=":gcsdk"></service>
         <!-- OPPO 游戏中心_SDK nearme game sdk config end -->
 
     </application>

@@ -11,6 +11,7 @@ import com.yc.adsdk.core.AdCallback;
 import com.yc.adsdk.core.AdType;
 import com.yc.adsdk.core.AdTypeHind;
 import com.yc.adsdk.core.Error;
+import com.yc.adsdk.core.IUserApiCallback;
 import com.yc.adsdk.core.SAdSDK;
 
 public class MiMainRealActivity extends Activity implements View.OnClickListener {
@@ -24,6 +25,7 @@ public class MiMainRealActivity extends Activity implements View.OnClickListener
         Button videoVertical = findViewById(R.id.btn_video_v);
         Button banner = findViewById(R.id.btn_banner);
         Button bannerHind = findViewById(R.id.btn_banner_hind);
+        Button logout = findViewById(R.id.btn_logout);
 
 
         splashVertical.setOnClickListener(this);
@@ -31,6 +33,7 @@ public class MiMainRealActivity extends Activity implements View.OnClickListener
         insertVertical.setOnClickListener(this);
         banner.setOnClickListener(this);
         bannerHind.setOnClickListener(this);
+        logout.setOnClickListener(this);
     }
 
     @Override
@@ -110,6 +113,19 @@ public class MiMainRealActivity extends Activity implements View.OnClickListener
                 break;
             case R.id.btn_banner_hind:
                 SAdSDK.getImpl().hindAd(AdTypeHind.BANNER);
+                break;
+            case R.id.btn_logout:
+                SAdSDK.getImpl().logout(this, new IUserApiCallback() {
+                    @Override
+                    public void onSuccess(String msg) {
+
+                    }
+
+                    @Override
+                    public void onFailure(String msg, int code) {
+
+                    }
+                });
                 break;
         }
     }

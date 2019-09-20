@@ -65,6 +65,7 @@ public class SUcAdSdk implements ISGameSDK {
     private String mVideoPosId;
     private String mWelcomeId;
     private String mIdAppId;
+    private Context mVideoContext;
 
 
     public static SUcAdSdk getImpl() {
@@ -101,7 +102,7 @@ public class SUcAdSdk implements ISGameSDK {
 
     @Override
     public void initUser(Context context, InitUserCallback userCallback) {
-
+        userCallback.onSuccess();
     }
 
     private boolean initConfig(Context context) {
@@ -174,6 +175,7 @@ public class SUcAdSdk implements ISGameSDK {
                     }
                 }
             });
+            loadVideoAd(mActivity);  //预加载视频广告
         }
 
         @Override
@@ -203,7 +205,9 @@ public class SUcAdSdk implements ISGameSDK {
                 loadBannerAd((Activity) context);
                 break;
             case VIDEO:
-                loadVideoAd((Activity) context);
+                this.mVideoContext = context;
+//                loadVideoAd((Activity) context);
+                showVideoAd();
                 break;
             case INSTER:
                 loadInsertAd((Activity) context);
@@ -386,7 +390,7 @@ public class SUcAdSdk implements ISGameSDK {
 
 
     private void loadVideoAd(Activity activity) {
-        Log.d(TAG, "loadBannerAd: mIdAppId " + mIdAppId + " mVideoPosId " + mVideoPosId);
+        Log.d(TAG, "loadVideoAd: 加载视频广告 mIdAppId " + mIdAppId + " mVideoPosId " + mVideoPosId);
         NGAVideoProperties properties = new NGAVideoProperties(activity, mIdAppId, mVideoPosId);
         properties.setListener(mVideoAdListener);
         NGASDK ngasdk = NGASDKFactory.getNGASDK();
@@ -404,32 +408,44 @@ public class SUcAdSdk implements ISGameSDK {
         ngasdk.loadAd(properties);
     }
 
+    private void showVideoAd() {
+        isLoadAndShowVideo = false;
+        if (mNGAVideoController != null) { //播放视频
+            mNGAVideoController.showAd();
+            if (mAdCallback != null) {
+                mAdCallback.onPresent();
+            }
+        } else {
+            loadVideoAd((Activity) mVideoContext);
+            isLoadAndShowVideo = true;
+        }
+    }
+
+    //
+    private boolean isLoadAndShowVideo = false;
+
     NGAVideoListener mVideoAdListener = new NGAVideoListener() {
         @Override
         public void onRequestAd() {  //01 请求
-            Log.d(TAG, "VideoAdListener onRequestAd: 05");
+            Log.d(TAG, "VideoAdListener onRequestAd: 请求视频广告");
         }
 
         @Override
         public <T extends NGAdController> void onReadyAd(T controller) {  //02 准备完成
-            Log.d(TAG, "VideoAdListener onReadyAd: 06");
+            Log.d(TAG, "VideoAdListener onReadyAd: 视频广告加载成功");
             mNGAVideoController = (NGAVideoController) controller;
-            if (mNGAVideoController != null) {  //播放视频
-                mNGAVideoController.showAd();
-                if (mAdCallback != null) {
-                    mAdCallback.onPresent();
-                }
+            if (isLoadAndShowVideo) {
+                showVideoAd();
             }
         }
 
         @Override
         public void onShowAd() { // 03 播放
-            Log.d(TAG, "VideoAdListener onShowAd: 01");
+            Log.d(TAG, "VideoAdListener onShowAd: 展示视频广告");
         }
 
         @Override
         public void onCompletedAd() {  //04 播放完成
-            Log.d(TAG, "VideoAdListener onCompletedAd: 07");
         }
 
 
@@ -439,11 +455,12 @@ public class SUcAdSdk implements ISGameSDK {
             if (mAdCallback != null) {
                 mAdCallback.onDismissed();
             }
+            mNGAVideoController = null;  //清除上一个视频的Controller
+            loadVideoAd((Activity) mVideoContext);
         }
 
         @Override
         public void onClickAd() {
-            Log.d(TAG, "VideoAdListener onClickAd: 02");
             if (mAdCallback != null) {
                 mAdCallback.onClick();
             }
@@ -452,7 +469,6 @@ public class SUcAdSdk implements ISGameSDK {
         @Override
         public void onErrorAd(int code, String message) {
             Log.d(TAG, "VideoAdListener onErrorAd: 04" + " ucsdk_code " + code + "  message " + message);
-//            showCacheVideoAd(code, message);
             if (mAdCallback != null) {
                 Error adError = new Error();
                 adError.setCode(String.valueOf(Error.AD_ERROR));
@@ -460,29 +476,9 @@ public class SUcAdSdk implements ISGameSDK {
                 adError.setMessage(message);
                 mAdCallback.onNoAd(adError);
             }
+//            loadVideoAd((Activity) mVideoContext);
         }
     };
-
-    private void showCacheVideoAd(final int code, final String message) {
-        Log.d(TAG, "showCacheVideoAd: VideoAdListener 视频广告加载失败，准备播放缓存");
-        Log.d(TAG, "showCacheVideoAd: ");
-        if (mNGAVideoController != null) {
-            Log.d(TAG, "showCacheVideoAd: VideoAdListener 视频广告加载失败，准备缓存 01");
-            if (mNGAVideoController.hasCacheAd()) {
-                Log.d(TAG, "showCacheVideoAd: VideoAdListener 视频广告加载失败，准备缓存 02");
-                mNGAVideoController.showAd();
-            }
-        } else {
-            Log.d(TAG, "showCacheVideoAd: VideoAdListener 视频广告加载失败，不存在缓存视频");
-            if (mAdCallback != null) {
-                Error adError = new Error();
-                adError.setCode(String.valueOf(Error.AD_ERROR));
-//                adError.setCode(String.valueOf(code));
-                adError.setMessage(message);
-                mAdCallback.onNoAd(adError);
-            }
-        }
-    }
 
     //注意：请在Activity成员变量保存，使用匿名内部类可能导致回收
     private NGAWelcomeListener mSplashAdListener = new NGAWelcomeListener() {

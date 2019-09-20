@@ -14,7 +14,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.whsjlgame.zzx2.mi"
+        applicationId "com.whsjlgame.chicken98k.mi"
         minSdkVersion 15
         targetSdkVersion 28
         versionCode 4

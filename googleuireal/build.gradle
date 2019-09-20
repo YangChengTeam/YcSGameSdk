@@ -3,11 +3,20 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 28
+    signingConfigs {
+        release {
+            storeFile file('D:\\app_key_store\\WhackZombies_nosdk.jks')
+            storePassword "ychl888"
+            keyAlias "WhackZombies"
+            keyPassword "ychl888"
+        }
 
+    }
 
     defaultConfig {
         applicationId "com.whsjlgame.whackzombies"
-        minSdkVersion 15
+        minSdkVersion 16
+//        minSdkVersion 'o at least 1'
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
@@ -20,9 +29,13 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
-
+   /* compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }*/
 }
 
 dependencies {
@@ -33,4 +46,10 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation project(path: ':googlead')
+//    implementation 'com.google.firebase:firebase-analytics:17.2.0'
+
+    implementation 'com.google.firebase:firebase-analytics:17.2.0'
+
 }
+// Add to the bottom of the file
+apply plugin: 'com.google.gms.google-services'

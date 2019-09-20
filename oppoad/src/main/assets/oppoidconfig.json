@@ -1,14 +1,15 @@
 {
-  "message": "OPPO广告SDK参数",
+  "message": "OPPO广告SDK参数-刺杀国王com.whsjlgame.killking",
   "data": {
-    "appId": "30161517",
+    "appId": "30190186",
+    "videoAdId": "120426",
+    "bannerAdId": "120425",
     "splashAdId": "23213",
-    "bannerAdId": "114263",
-    "videoAdId": "114264",
     "insterAdId": "23212",
-    "userAppAecret": "4888e03250ee4cd396e83ba861b54a7a",
-    "userAppId": "30161517",
-    "umengAppKey": "5d65e98a4ca357f9b8000b6a"
+    "userAppSecret": "11c7896106fc4cdb9f9b626b6b417b75",
+    "oppo_manifest_app_key": "e11b1bcf73ba4be8ae8b320e7eb2a7a5",
+    "umengAppKey": "5d65e901570df34b7700011f",
+    "umengChannel": "oppo"
   },
   "code": "0"
 }

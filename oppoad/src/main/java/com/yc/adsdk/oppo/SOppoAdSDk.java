@@ -66,12 +66,12 @@ public class SOppoAdSDk implements ISGameSDK {
     private String mBannerAdId;
     private String mVideoAdId;
     private String mInsterAdId;
-    private String mUserAppId;
-    private String mUserAppAecret;
+    private String mUserAppSecret;
     private boolean mIsInitAd = false;
     private boolean mIsInitUser = false;
     private Context context;
     private String mUmengAppKey;
+    private String mUmengChannel;
 
 
     public static SOppoAdSDk getImpl() {
@@ -115,7 +115,7 @@ public class SOppoAdSDk implements ISGameSDK {
         if (!initConfig(context, false, userCallback != null)) {
             return;
         }
-        Log.d(LOGTAG, "initUser: mUserAppAecret " + mUserAppAecret + "  mUserAppId :" + mUserAppId);
+        Log.d(LOGTAG, "initUser: mUserAppSecret " + mUserAppSecret);
 
         boolean supportedMobile = MobAdManager.getInstance().isSupportedMobile();
         if (!supportedMobile) {
@@ -137,10 +137,13 @@ public class SOppoAdSDk implements ISGameSDK {
     }
 
     private void initSdkAd(final Context context, final InitAdCallback adCallback) {
-        if (!initConfig(context, adCallback != null,false)) {
+        if (!initConfig(context, adCallback != null, false)) {
             return;
         }
-        UMConfigure.init(context, mUmengAppKey, "Umeng", UMConfigure.DEVICE_TYPE_PHONE, null);
+
+        Log.d(LOGTAG, "initAd:  mUmengAppKey " + mUmengAppKey + " mUmengChannel " + mUmengChannel);
+
+        UMConfigure.init(context, mUmengAppKey, mUmengChannel, UMConfigure.DEVICE_TYPE_PHONE, null);
         // 选用AUTO页面采集模式
         MobclickAgent.setPageCollectionMode(MobclickAgent.PageMode.AUTO);
 
@@ -174,14 +177,14 @@ public class SOppoAdSDk implements ISGameSDK {
     }
 
     private void initSdkUser(Context context, final InitUserCallback userCallback) {
-        GameCenterSDK.init(mUserAppAecret, context);
+        GameCenterSDK.init(mUserAppSecret, context);
         new android.os.Handler(new Handler.Callback() {
             @Override
             public boolean handleMessage(Message msg) {
                 userCallback.onSuccess();
                 return false;
             }
-        }).sendEmptyMessageDelayed(0, 2100);//表示延迟3秒发送任务
+        }).sendEmptyMessageDelayed(0, 1100);//表示延迟3秒发送任务
     }
 
     @Override
@@ -201,9 +204,11 @@ public class SOppoAdSDk implements ISGameSDK {
 
     @Override
     public void logout(final Context context, final IUserApiCallback iUserApiCallback) {
+        Log.d(LOGTAG, "logout: iUserApiCallback ============ ");
         GameCenterSDK.getInstance().onExit((Activity) context, new GameExitCallback() {
             @Override
             public void exitGame() {
+                Log.d(LOGTAG, "logout exitGame: ");
                 iUserApiCallback.onSuccess("游戏账号已退出");
                 AppUtil.exitGameProcess(context);
             }
@@ -260,7 +265,14 @@ public class SOppoAdSDk implements ISGameSDK {
             if (data.has("umengAppKey")) {
                 mUmengAppKey = data.getString("umengAppKey");
                 if (TextUtils.isEmpty(mUmengAppKey)) {
-                    Toast.makeText(context, "初始化失败，缺少广告必须参数 userAppId", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "初始化失败，缺少广告必须参数 mUmengAppKey", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+            }
+            if (data.has("umengChannel")) {
+                mUmengChannel = data.getString("umengChannel");
+                if (TextUtils.isEmpty(mUmengChannel)) {
+                    Toast.makeText(context, "初始化失败，缺少广告必须参数 mUmengChannel", Toast.LENGTH_SHORT).show();
                     return false;
                 }
             }
@@ -302,17 +314,10 @@ public class SOppoAdSDk implements ISGameSDK {
                 }
             }
             if (isAddInitUserCallback) {
-                if (data.has("userAppAecret")) {
-                    mUserAppAecret = data.getString("userAppAecret");
-                    if (TextUtils.isEmpty(mUserAppAecret)) {
+                if (data.has("userAppSecret")) {
+                    mUserAppSecret = data.getString("userAppSecret");
+                    if (TextUtils.isEmpty(mUserAppSecret)) {
                         Toast.makeText(context, "初始化失败，缺少广告必须参数 userAppAecret", Toast.LENGTH_SHORT).show();
-                        return false;
-                    }
-                }
-                if (data.has("userAppId")) {
-                    mUserAppId = data.getString("userAppId");
-                    if (TextUtils.isEmpty(mUserAppId)) {
-                        Toast.makeText(context, "初始化失败，缺少广告必须参数 userAppId", Toast.LENGTH_SHORT).show();
                         return false;
                     }
                 }
@@ -332,12 +337,13 @@ public class SOppoAdSDk implements ISGameSDK {
     @Override
     public void showAd(Context context, AdType type, AdCallback callback, ViewGroup viewGroup) {
         this.mAdCallback = callback;
-        this.context=context;
+        this.context = context;
         switch (type) {
             case BANNER:
                 loadBannerAd((Activity) context);
                 break;
             case VIDEO:
+            case VIDEO_HORIZON:
                 loadVideoAd((Activity) context);
                 break;
             case INSTER:
@@ -707,20 +713,19 @@ public class SOppoAdSDk implements ISGameSDK {
             mIsClickSplashAd = true;
         }
     };
-    /**
-     * oppoidconfig 测试ID
-     * {
-     *   "message": "OPPO广告SDK参数",
-     *   "data": {
-     *     "appId": "3705524",
-     *     "splashAdId": "23213",
-     *     "bannerAdId": "23211",
-     *     "videoAdId": "23234",
-     *     "insterAdId": "23212",
-     *     "userAppAecret": "4888e03250ee4cd396e83ba861b54a7a",
-     *     "userAppId": "30161517"
-     *   },
-     *   "code": "0"
-     * }
-     */
+
+    /*{
+        "message": "OPPO广告SDK参数-跳跃吧邦尼",
+            "data": {
+        "appId": "30161517",
+                "splashAdId": "23213",
+                "bannerAdId": "114263",
+                "videoAdId": "114264",
+                "insterAdId": "23212",
+                "userAppAecret": "4888e03250ee4cd396e83ba861b54a7a",
+                "umengAppKey": "5d65e98a4ca357f9b8000b6a"
+    },
+        "code": "0"
+    }*/
+
 }

@@ -1,17 +1,18 @@
 {
-  "message": "小米广告SDK参数-部分正式-疯狂飞刀之僵尸农场",
+  "message": "小米广告SDK参数-部分正式-刺杀国王com.whsjlgame.killking",
   "data": {
-    "appId": "2882303761518141674",
+    "appId": "2882303761518146614",
+    "videoVerticalAdId": "8a36a4d4117442efeea312d739ab4045",
+    "bannerAdId": "e2299067dafd1745565236ad56233b54",
+    "videoHorizonAdId": "17853953c5adafd100f24cd747edd6b7",
     "appKey": "appKey",
     "appToken": "appToken",
     "splashVerticalAdId": "686225be57c8fed008db8f274d08a387",
     "splashHorizonAdId": "94f4805a2d50ba6e853340f9035fda18",
-    "videoVerticalAdId": "7b6419fb7345fe748ce80cfd4f357efb",
-    "videoHorizonAdId": "17853953c5adafd100f24cd747edd6b7",
-    "bannerAdId": "1e96d5ee1374835dbd1c2c9e7f201b00",
     "insterVerticalAdId": "9e44cb3c76bf41da115864dcc738e98a",
     "insterHorizonAdId": "1d576761b7701d436f5a9253e7cf9572",
-    "umengAppKey": "5d65e94d4ca357f9b8000b3c"
+    "umengAppKey": "5d65e901570df34b7700011f",
+    "umengChannel": "xiaomi"
   },
   "code": "0"
 }

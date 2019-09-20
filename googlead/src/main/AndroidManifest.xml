@@ -1,23 +1,44 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.yc.adsdk" >
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.yc.adsdk">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.GET_TASKS" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-    <application>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+
+    <!-- tools:overrideLibrary="com.flurry.android.analytics.sdk">-->
+    <application
+        android:hardwareAccelerated="true"
+        android:networkSecurityConfig="@xml/network_security_config"
+        tools:overrideLibrary="com.flurry.android.analytics.sdk">
+        <uses-library
+            android:name="org.apache.http.legacy"
+            android:required="false" />
         <!-- Sample AdMob App ID: ca-app-pub-3940256099942544~3347511713 -->
-        <!--<meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713"/>-->
+        <!-- <meta-data
+             android:name="com.google.android.gms.ads.APPLICATION_ID"
+             android:value="ca-app-pub-3940256099942544~3347511713"/>-->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-5223248037916302~4450818113"/>
+            android:value="ca-app-pub-5223248037916302~4450818113" />
+
+        <!-- Mintegral广告  start -->
+        <!--必须Component   start  -->
+        <activity
+            android:name="com.mintegral.msdk.activity.MTGCommonActivity"
+            android:configChanges="keyboard|orientation"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"></activity>
+
+
+        <!--必须Component   end  -->
+        <activity
+            android:name="com.mintegral.msdk.reward.player.MTGRewardVideoActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
+        <!-- Mintegral广告  end -->
     </application>
 </manifest>

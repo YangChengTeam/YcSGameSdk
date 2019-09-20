@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.os.Message;
-import android.support.annotation.MainThread;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
@@ -1098,7 +1097,6 @@ public class STtAdSDk implements ISGameSDK {
         //step4:请求广告，调用开屏广告异步请求接口，对请求回调的广告作渲染处理
         mTTAdNative.loadSplashAd(adSlot, new TTAdNative.SplashAdListener() {
             @Override
-            @MainThread
             public void onError(int code, String message) {
                 Log.d(TAG, message);
                 mHasLoaded = true;
@@ -1113,7 +1111,6 @@ public class STtAdSDk implements ISGameSDK {
             }
 
             @Override
-            @MainThread
             public void onTimeout() {
                 mHasLoaded = true;
 //                showToast("开屏广告加载超时");
@@ -1126,7 +1123,6 @@ public class STtAdSDk implements ISGameSDK {
             }
 
             @Override
-            @MainThread
             public void onSplashAdLoad(TTSplashAd ad) {
                 Log.d(TAG, "开屏广告请求成功");
                 mHasLoaded = true;

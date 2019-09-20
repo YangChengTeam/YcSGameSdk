@@ -20,11 +20,11 @@ public class PermissionHelpUtils {
      * WRITE_CALENDAR、ACCESS_FINE_LOCATION 是两个可选权限；没有不影响SDK获取广告；但是如果应用申请到该权限，会显著提升应用的广告收益
      */
     public static List<String> getMustPermissions() {
-        return Arrays.asList(Manifest.permission.READ_PHONE_STATE, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        return Arrays.asList(Manifest.permission.READ_PHONE_STATE);
     }
 
     public static List<String> getNotMustPermissions() {
-        return Arrays.asList(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_CALENDAR);
+        return Arrays.asList();
     }
 
     /**
