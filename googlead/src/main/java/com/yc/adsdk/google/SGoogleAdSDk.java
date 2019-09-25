@@ -21,6 +21,7 @@ import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.initialization.AdapterStatus;
 import com.google.android.gms.ads.initialization.InitializationStatus;
@@ -53,6 +54,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import okhttp3.Call;
@@ -74,7 +77,6 @@ public class SGoogleAdSDk implements ISGameSDK {
     private AdView mBannerAdAdView;
     private String mBannerAdId;
     private String mVideoAdId;
-    private RewardedAd mRewardedAd;
     private AdCallback mAdCallback;
     private String mMintegralRewardedVideoUnitId;
     private String mMintegralAppKey;
@@ -84,10 +86,14 @@ public class SGoogleAdSDk implements ISGameSDK {
     private MTGRewardVideoHandler mMTGRewardVideoHandler;
     private Context mContext;
     private RewardedVideoAd mRewardedVideoAdInstance;
+    private InterstitialAd mInterstitialAd;
+    private String mOpenVideoType = "0";
+    private String mInsterAdId;
 
 
     public static SGoogleAdSDk getImpl() {
         if (sAdSDK == null) {
+
             synchronized (SGoogleAdSDk.class) {
                 if (sAdSDK == null) {
                     sAdSDK = new SGoogleAdSDk();
@@ -96,14 +102,18 @@ public class SGoogleAdSDk implements ISGameSDK {
         }
         return sAdSDK;
     }
-    public static String[] getTestDeviceInfo(Context context){
+
+    /**
+     * 友盟测试设备
+     */
+    private static String[] getTestDeviceInfo(Context context) {
         String[] deviceInfo = new String[2];
         try {
-            if(context != null){
+            if (context != null) {
                 deviceInfo[0] = DeviceConfig.getDeviceIdForGeneral(context);
                 deviceInfo[1] = DeviceConfig.getMac(context);
             }
-        } catch (Exception e){
+        } catch (Exception e) {
         }
         return deviceInfo;
     }
@@ -126,22 +136,21 @@ public class SGoogleAdSDk implements ISGameSDK {
         UMConfigure.init(context, mUmengAppKey, mUmengChannel, UMConfigure.DEVICE_TYPE_PHONE, null);
         // 选用AUTO页面采集模式
         MobclickAgent.setPageCollectionMode(MobclickAgent.PageMode.AUTO);
-        UMConfigure.setLogEnabled(true);
+//        UMConfigure.setLogEnabled(true);
 
 
-        String[] testDeviceInfo = getTestDeviceInfo(context);
-        Log.d(TAG, "initAd: testDeviceInfo[0] "+testDeviceInfo[0]);
-        Log.d(TAG, "initAd: testDeviceInfo[1] "+testDeviceInfo[1]);
+//        String[] testDeviceInfo = getTestDeviceInfo(context);
+//        Log.d(TAG, "initAd: testDeviceInfo[0] " + testDeviceInfo[0]);
+//        Log.d(TAG, "initAd: testDeviceInfo[1] " + testDeviceInfo[1]);
 
 
-
-
-        Log.d(TAG, "initAd:  " + " mBannerAdId " + mBannerAdId + " mVideoAdId " + mVideoAdId);
+        Log.d(TAG, "initAd:  " + " mBannerAdId " + mBannerAdId + " mVideoAdId " + mVideoAdId + " mInsterAdId " + mInsterAdId);
 
         initAllAd(context);
 
-        String url = "http://wsjt.zhuoyi51.com/api/index/apkcount";
-        getAsyncToApkcount(url, context);
+
+        String urlAsyncToApkcount = "http://wsjt.zhuoyi51.com/api/index/apkcount";
+        getAsyncToApkcount(urlAsyncToApkcount, context);
 
         new Handler(Looper.myLooper(), new Handler.Callback() {
             @Override
@@ -155,6 +164,7 @@ public class SGoogleAdSDk implements ISGameSDK {
             adCallback.onSuccess();
         }
     }
+
 
     private void initAllAd(Context context) {
         MobileAds.initialize(context, new OnInitializationCompleteListener() {
@@ -185,29 +195,70 @@ public class SGoogleAdSDk implements ISGameSDK {
     }
 
     private void loadAllRewardedVideo(final Context context) {
-        loadMintegralRewardedVideo((Activity) context); //MintegralVideo
-        loadGoogleRewardedVideo((Activity) context);  //GoogleVideo
+        Log.d(TAG, "loadAllRewardedVideo: 加载广告");
+        loadMintegralRewardedVideo((Activity) context); //预加载 MintegralVideo
+        loadGoogleRewardedVideo((Activity) context);  //预加载 GoogleVideo
+        loadGoogleInterstitialAd(context); //预加载 google插屏广告
+    }
+
+    /**
+     * 优先加载的广告类型
+     */
+    private void getAsyncToOpenVideoType(String urlAsyncToOpenVideoType) {
+//        OkHttpClient okHttpClient = new OkHttpClient();
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .retryOnConnectionFailure(true)
+                .build();
+        RequestBody requestBody = new FormBody.Builder().build();
+        Request request = new Request.Builder().url(urlAsyncToOpenVideoType).post(requestBody).build();
+        Call call = okHttpClient.newCall(request);
+        Log.d(TAG, "getAsyncToOpenVideoType: url :" + urlAsyncToOpenVideoType);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.d(TAG, "getAsyncToOpenVideoType onFailure: IOException " + e);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                //请求成功
+                String string = response.body().string();
+                Log.d(TAG, "getAsyncToOpenVideoType onResponse: string " + string);
+                try {
+                    JSONObject jsonObject = new JSONObject(string);
+                    if (jsonObject.has("open")) {
+                        mOpenVideoType = jsonObject.getString("open");
+                        Log.d(TAG, "getAsyncToOpenVideoType onResponse: mOpenVideoType " + mOpenVideoType);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     /**
      * 本地进行统计
      */
     private void getAsyncToApkcount(String url, Context context) {
-        //1.创建OkHttpClient对象
-        OkHttpClient okHttpClient = new OkHttpClient();
-        //2.通过new FormBody()调用build方法,创建一个RequestBody,可以用add添加键值对
+//        OkHttpClient okHttpClient = new OkHttpClient();
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .retryOnConnectionFailure(true)
+                .build();
         String phoneIMEI = PhoneIMEIUtil.getPhoneIMEI(context);
-        RequestBody requestBody = new FormBody.Builder().add("imei", phoneIMEI).add("system", "android" + android.os.Build.VERSION.RELEASE).add("model", android.os.Build.BRAND).build();
-        //3.创建Request对象，设置URL地址，将RequestBody作为post方法的参数传入
+        RequestBody requestBody = new FormBody.Builder().add("imei", phoneIMEI).add("system", "android" + android.os.Build.VERSION.RELEASE).add("model", android.os.Build.BRAND + "_" + android.os.Build.MODEL).build();
         Request request = new Request.Builder().url(url).post(requestBody).build();
-        //4.创建一个call对象,参数就是Request请求对象
         Call call = okHttpClient.newCall(request);
-        Log.d(TAG, "getAsyncToApkcount initAd: url :" + url + " phoneIMEI " + phoneIMEI + " system " + android.os.Build.VERSION.RELEASE + " model " + android.os.Build.BRAND);
-        //5.请求加入调度,重写回调方法
+        Log.d(TAG, "getAsyncToApkcount initAd: url :" + url + " phoneIMEI " + phoneIMEI + " system " + android.os.Build.VERSION.RELEASE + " model " + android.os.Build.BRAND + "_" + android.os.Build.MODEL);
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
+
+                //getAsyncToApkcount onFailure: IOException java.io.IOException: unexpected end of stream on Connection{wsjt.zhuoyi51.com:80, proxy=DIRECT hostAddress=wsjt.zhuoyi51.com/116.211.183.211:80 cipherSuite=none protocol=http/1.1}
+
                 Log.d(TAG, "getAsyncToApkcount onFailure: IOException " + e);
+                String urlAsyncToOpenVideoType = "http://wsjt.zhuoyi51.com/api/index/open";
+                getAsyncToOpenVideoType(urlAsyncToOpenVideoType);
             }
 
             @Override
@@ -215,9 +266,10 @@ public class SGoogleAdSDk implements ISGameSDK {
                 //请求成功
                 String string = response.body().string();
                 Log.d(TAG, "getAsyncToApkcount onResponse: string " + string);
+                String urlAsyncToOpenVideoType = "http://wsjt.zhuoyi51.com/api/index/open";
+                getAsyncToOpenVideoType(urlAsyncToOpenVideoType);
             }
         });
-
     }
 
     @Override
@@ -230,13 +282,16 @@ public class SGoogleAdSDk implements ISGameSDK {
                 mHandler.postDelayed(r, 40000);//延时100毫秒
                 break;
             case VIDEO:
+                if ("0".equals(mOpenVideoType)) {
+                    showGoogleRewardedVideo(context);
+                } else {
+                    showMintegralRewardedVideo(context);
+                }
 //                loadVideoVerticalAd((Activity) context, true);
 //                showVideoVerticalAdForMintegral(context);
-                showGoogleRewardedVideo();
                 break;
             case INSTER:
-                Log.d(TAG, "SNopAdSDk showAd: 插屏广告展示成功");
-                callback.onPresent();
+                showGoogleInterstitialAd(context);
                 break;
             case SPLASH:
                 Log.d(TAG, "SNopAdSDk showAd: 闪屏广告展示成功");
@@ -247,33 +302,96 @@ public class SGoogleAdSDk implements ISGameSDK {
         Log.d(TAG, "SNopAdSDk  showAd: AdType ： " + type);
     }
 
+    private void loadGoogleInterstitialAd(final Context context) {
+        final InterstitialAd interstitialAd = new InterstitialAd(context);
+        interstitialAd.setAdUnitId(mInsterAdId);
+        interstitialAd.loadAd(new AdRequest.Builder().build());
+
+        interstitialAd.setAdListener(new AdListener() {
+            @Override
+            public void onAdLoaded() {
+                // Code to be executed when an ad finishes loading.
+                Log.d(TAG, "showGoogleInterstitialAd 插屏广告： onAdLoaded: ");
+                SGoogleAdSDk.this.mInterstitialAd = interstitialAd;
+            }
+
+            @Override
+            public void onAdFailedToLoad(int errorCode) {
+                Error error = new Error();
+                error.setMessage("广告加载失败");
+                mAdCallback.onNoAd(error);
+                // Code to be executed when an ad request fails.
+                Log.d(TAG, "showGoogleInterstitialAd 插屏广告： onAdFailedToLoad: errorCode " + errorCode);
+            }
+
+            @Override
+            public void onAdOpened() {
+                mAdCallback.onPresent();
+                // Code to be executed when the ad is displayed.
+                Log.d(TAG, "showGoogleInterstitialAd 插屏广告： onAdOpened: ");
+            }
+
+            @Override
+            public void onAdClicked() {
+                mAdCallback.onClick();
+                // Code to be executed when the user clicks on an ad.
+                Log.d(TAG, "showGoogleInterstitialAd 插屏广告： onAdClicked: ");
+            }
+
+            @Override
+            public void onAdLeftApplication() {
+                // Code to be executed when the user has left the app.
+                Log.d(TAG, "showGoogleInterstitialAd 插屏广告： onAdLeftApplication: ");
+            }
+
+            @Override
+            public void onAdClosed() {
+                mAdCallback.onDismissed();
+                // Code to be executed when the interstitial ad is closed.
+                Log.d(TAG, "showGoogleInterstitialAd 插屏广告： onAdClosed: ");
+                loadGoogleInterstitialAd(context);
+            }
+        });
+    }
+
+    private void showGoogleInterstitialAd(Context context) {
+        if (mInterstitialAd != null && mInterstitialAd.isLoaded()) {
+            mInterstitialAd.show();
+        } else {
+            Log.d("TAG", "The interstitial wasn't loaded yet.");
+            Error error = new Error();
+            error.setMessage("广告还未准备好");
+            mAdCallback.onNoAd(error);
+            loadGoogleInterstitialAd(context); //google插屏广告
+        }
+    }
+
 
     private void loadMintegralRewardedVideo(final Context context) {
+        Log.d(TAG, "loadMintegralRewardedVideo: 加载Mintegral视频广告");
+
         mMTGRewardVideoHandler = new MTGRewardVideoHandler(context, mMintegralRewardedVideoUnitId);
         mMTGRewardVideoHandler.setRewardVideoListener(new RewardVideoListener() {
 
             @Override
-            public void onLoadSuccess(String unitId) {
-                Log.d(TAG, "onLoadSuccess: unitId " + unitId + " -- " + Thread.currentThread());
+            public void onLoadSuccess(String unitId) {  ////加载视频成功,不能展示
+                Log.d(TAG, "Mintegral视频广告 加载视频成功,不能展示 onLoadSuccess: unitId " + unitId + " -- " + Thread.currentThread());
             }
 
             @Override
             public void onVideoLoadSuccess(String unitId) {  //加载视频成功，缓存完成
-                Log.d(TAG, "onVideoLoadSuccess: " + Thread.currentThread());
-                loadRewardedVideoAd();
+                Log.d(TAG, "Mintegral视频广告 加载视频成功，缓存完成 onVideoLoadSuccess: " + Thread.currentThread());
             }
 
             @Override
             public void onVideoLoadFail(String errorMsg) { ////加载视频失败，重新缓存
-                Log.d(TAG, "onVideoLoadFail errorMsg:" + errorMsg);
+                Log.d(TAG, "Mintegral视频广告 onVideoLoadFail errorMsg:" + errorMsg);
                 mMTGRewardVideoHandler.isReady();
-//                mMTGRewardVideoHandler.load();
-                loadRewardedVideoAd();
             }
 
             @Override
             public void onShowFail(String errorMsg) {
-                Log.d(TAG, "onShowFail=" + errorMsg);
+                Log.d(TAG, "Mintegral视频广告 onShowFail=" + errorMsg);
                 Error error = new Error();
                 error.setMessage(errorMsg);
                 mAdCallback.onNoAd(error);
@@ -281,38 +399,39 @@ public class SGoogleAdSDk implements ISGameSDK {
 
             @Override
             public void onAdShow() {
-                Log.d(TAG, "onAdShow");
+                Log.d(TAG, "Mintegral视频广告 onAdShow");
                 mAdCallback.onPresent();
             }
 
             @Override
             public void onAdClose(boolean isCompleteView, String RewardName, float RewardAmout) {
-                mMTGRewardVideoHandler.isReady(); //关闭广告时，缓存新的广告
-//                mMTGRewardVideoHandler.load();
-                Log.d(TAG, "onAdClose rewardinfo :" + "RewardName:" + RewardName + "RewardAmout:" + RewardAmout + " isCompleteView：" + isCompleteView);
-                if (isCompleteView) {
+//                mMTGRewardVideoHandler.isReady();
+                Log.d(TAG, "Mintegral视频广告 onAdClose rewardinfo :" + "RewardName:" + RewardName + "RewardAmout:" + RewardAmout + " isCompleteView：" + isCompleteView);
+                if (isCompleteView) { // 完整观看，能发放奖励
                     mAdCallback.onDismissed();
-//                    Toast.makeText(context, "onADClose:" + isCompleteView + ",rName:" + RewardName + "，RewardAmout:" + RewardAmout, Toast.LENGTH_SHORT).show();
-//                    showDialog(RewardName, RewardAmout);
-                } else {
-//                    Toast.makeText(context, "onADClose:" + isCompleteView + ",rName:" + RewardName + "，RewardAmout:" + RewardAmout, Toast.LENGTH_SHORT).show();
                 }
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        loadMintegralRewardedVideo(context); //关闭广告时，缓存新的广告
+                    }
+                }, 1200);
             }
 
             @Override
             public void onVideoAdClicked(String unitId) {
-                Log.d(TAG, "onVideoAdClicked unitId " + unitId);
+                Log.d(TAG, "Mintegral视频广告 onVideoAdClicked unitId " + unitId);
                 mAdCallback.onClick();
             }
 
             @Override
             public void onVideoComplete(String unitId) {  //播放结束
-                Log.d(TAG, "onVideoComplete unitId " + unitId);
+                Log.d(TAG, "Mintegral视频广告 onVideoComplete unitId " + unitId);
             }
 
             @Override
             public void onEndcardShow(String unitId) {  //播放结束后展示落地页
-                Log.d(TAG, "onEndcardShow unitId " + unitId);
+                Log.d(TAG, "Mintegral视频广告 onEndcardShow unitId " + unitId);
             }
         });
         mMTGRewardVideoHandler.load();
@@ -334,6 +453,13 @@ public class SGoogleAdSDk implements ISGameSDK {
                 mBannerAdId = data.getString("bannerAdId");
                 if (TextUtils.isEmpty(mBannerAdId)) {
                     Toast.makeText(context, "初始化失败，缺少广告必须参数 mBannerAdId", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+            }
+            if (data.has("insterAdId")) {
+                mInsterAdId = data.getString("insterAdId");
+                if (TextUtils.isEmpty(mInsterAdId)) {
+                    Toast.makeText(context, "初始化失败，缺少广告必须参数 mInsterAdId", Toast.LENGTH_SHORT).show();
                     return false;
                 }
             }
@@ -398,79 +524,36 @@ public class SGoogleAdSDk implements ISGameSDK {
         this.showAd(context, type, callback, null);
     }
 
-
-    private void showVideoVerticalAdForMintegral(Context context) {
-        if (mMTGRewardVideoHandler == null) {
-            Log.d(TAG, "showVideoVerticalAdForMintegral: mMTGRewardVideoHandler == null");
-            return;
-        }
-        if (mMTGRewardVideoHandler.isReady()) {
-            mMTGRewardVideoHandler.show("1", mMintegralRewardedVideoUnitId); //默认情况下将rewardId设置为1
-            Log.d(TAG, "showVideoVerticalAdForMintegral:isReady true -- show");
-        } else {
-            Log.d(TAG, "showVideoVerticalAdForMintegral:isReady false");
-//            showVideoVerticalAd(context);
-            showGoogleRewardedVideo();
-        }
-    }
-
-    private void showGoogleRewardedVideo() {
-        Log.d(TAG, "showGoogleRewardedVideo: 显示google的广告");
+    private void showGoogleRewardedVideo(Context context) {
+        Log.d(TAG, "showGoogleRewardedVideo: 优先展示google的广告");
         if (mRewardedVideoAdInstance != null && mRewardedVideoAdInstance.isLoaded()) {
             mRewardedVideoAdInstance.show();
         } else {
-            Log.d(TAG, "showGoogleRewardedVideo: google广告 没有准备好");
-            if (mMTGRewardVideoHandler == null) {
-                Log.d(TAG, "showVideoVerticalAdForMintegral: mMTGRewardVideoHandler == null");
-                return;
-            }
-            if (mMTGRewardVideoHandler.isReady()) {
+            Log.d(TAG, "showGoogleRewardedVideo: google广告 没有准备好，展示Mintegral广告");
+            loadRewardedVideoAd();  //google广告没有准备好，再次加载
+            if (mMTGRewardVideoHandler != null && mMTGRewardVideoHandler.isReady()) {
                 mMTGRewardVideoHandler.show("1", mMintegralRewardedVideoUnitId); //默认情况下将rewardId设置为1
             } else {
-                Log.d(TAG, "showGoogleRewardedVideo: Mintegral广告 没有准备好");
+                Log.d(TAG, "showGoogleRewardedVideo: Mintegral广告 也没有准备好");
+                loadMintegralRewardedVideo(context); //未准备好，重新加载
             }
         }
     }
 
-    private void showVideoVerticalAd(Context context) {
-        if (mRewardedAd == null) {
-            Log.d(TAG, "showVideoVerticalAd: mRewardedAd==null google广告load失败");
-            return;
+    private void showMintegralRewardedVideo(Context context) {
+        Log.d(TAG, "showMintegralRewardedVideo: 优先展示Mintegral的广告");
+        if (mMTGRewardVideoHandler != null && mMTGRewardVideoHandler.isReady()) {
+            mMTGRewardVideoHandler.show("1", mMintegralRewardedVideoUnitId); //默认情况下将rewardId设置为1
+        } else {
+            loadMintegralRewardedVideo(context); //未准备好，重新加载
+            Log.d(TAG, "showMintegralRewardedVideo: Mintegral广告 没有准备好,展示google广告");
+            if (mRewardedVideoAdInstance != null && mRewardedVideoAdInstance.isLoaded()) {
+                mRewardedVideoAdInstance.show();
+            } else {
+                Log.d(TAG, "showMintegralRewardedVideo: google广告 也没有准备好");
+                loadRewardedVideoAd(); //Mintegral广告没有准备好，google广告没有准备好
+            }
         }
-        if (mRewardedAd.isLoaded()) {
-
-        }
-        RewardedAdCallback adCallback = new RewardedAdCallback() {
-            public void onRewardedAdOpened() {  //开始播放
-                // Ad opened.
-                Log.d(TAG, "onRewardedAdOpened: ");
-                mAdCallback.onPresent();
-            }
-
-            public void onRewardedAdClosed() {  //视频关闭
-                // Ad closed.
-                Log.d(TAG, "onRewardedAdClosed: ");
-            }
-
-            @Override
-            public void onUserEarnedReward(@NonNull com.google.android.gms.ads.rewarded.RewardItem rewardItem) {  //获取奖励
-                Log.d(TAG, "onUserEarnedReward: rewardItem " + rewardItem);
-                String type = rewardItem.getType();
-                int amount = rewardItem.getAmount();
-                Log.d(TAG, "onUserEarnedReward: type " + type + " amount " + amount);
-                mAdCallback.onDismissed();
-            }
-
-            public void onRewardedAdFailedToShow(int errorCode) {
-                // Ad failed to display
-                Log.d(TAG, "onRewardedAdFailedToShow: errorCode " + errorCode);
-                Error error = new Error();
-                error.setMessage("初始化视频环境失败");
-                error.setCode(String.valueOf(errorCode));
-                mAdCallback.onNoAd(error);
-            }
-        };
-        mRewardedAd.show((Activity) context, adCallback);
     }
 
     /**
@@ -479,34 +562,35 @@ public class SGoogleAdSDk implements ISGameSDK {
      * @param context
      */
     private void loadGoogleRewardedVideo(final Activity context) {
+        Log.d(TAG, "loadGoogleRewardedVideo: 加载google视频广告");
 
         mRewardedVideoAdInstance = MobileAds.getRewardedVideoAdInstance(context);
         mRewardedVideoAdInstance.setRewardedVideoAdListener(new RewardedVideoAdListener() {
             @Override
             public void onRewardedVideoAdLoaded() {
-                Log.d(TAG, "onRewardedVideoAdLoaded: ");
+                Log.d(TAG, "google视频广告 onRewardedVideoAdLoaded: 加载完成");
             }
 
             @Override
             public void onRewardedVideoAdOpened() {
-                Log.d(TAG, "onRewardedVideoAdOpened: ");
+                Log.d(TAG, "google视频广告 onRewardedVideoAdOpened: 广告打开");
             }
 
             @Override
             public void onRewardedVideoStarted() {
-                Log.d(TAG, "onRewardedVideoStarted: ");
+                Log.d(TAG, "google视频广告 onRewardedVideoStarted: 开始播放");
             }
 
             @Override
             public void onRewardedVideoAdClosed() { //关闭广告
-                Log.d(TAG, "onRewardedVideoAdClosed: ");
-                // Load the next rewarded video ad.
-                loadRewardedVideoAd();
+                Log.d(TAG, "google视频广告 onRewardedVideoAdClosed: 关闭广告");
+                // developers.google ---》Load the next rewarded video ad.  加载下一个奖励的视频广告。
+                loadRewardedVideoAd();  //关闭广告，再次加载广告
             }
 
             @Override
             public void onRewarded(RewardItem rewardItem) {
-                Log.d(TAG, "onRewarded: ");
+                Log.d(TAG, "google视频广告 onRewarded: 获取奖励");
                 Log.d(TAG, "onUserEarnedReward: rewardItem " + rewardItem);
                 String type = rewardItem.getType();
                 int amount = rewardItem.getAmount();
@@ -516,52 +600,32 @@ public class SGoogleAdSDk implements ISGameSDK {
 
             @Override
             public void onRewardedVideoAdLeftApplication() {
-                Log.d(TAG, "onRewardedVideoAdLeftApplication: ");
+                Log.d(TAG, "google视频广告 onRewardedVideoAdLeftApplication: ");
             }
 
             @Override
             public void onRewardedVideoAdFailedToLoad(int i) {
-                Log.d(TAG, "onRewardedVideoAdFailedToLoad: " + i);
-                loadRewardedVideoAd();
+                Log.d(TAG, "google视频广告 onRewardedVideoAdFailedToLoad: 广告加载失败 " + i);
+                Error error = new Error();
+                error.setMessage("广告加载失败");
+                mAdCallback.onNoAd(error);
             }
 
             @Override
             public void onRewardedVideoCompleted() {
-                Log.d(TAG, "onRewardedVideoCompleted: ");
+                Log.d(TAG, "google视频广告 onRewardedVideoCompleted: 播放完成 ");
             }
         });
 
-        loadRewardedVideoAd();
-
-//        final RewardedAd rewardedAd = new RewardedAd(context,
-//                mVideoAdId);
-//        RewardedAdLoadCallback adLoadCallback = new RewardedAdLoadCallback() {
-//            @Override
-//            public void onRewardedAdLoaded() {
-//                Log.d(TAG, "loadVideoVerticalAd onRewardedAdLoaded:  success");
-//                // Ad successfully loaded.
-//                SGoogleAdSDk.this.mRewardedAd = rewardedAd;
-//            }
-//
-//            @Override
-//            public void onRewardedAdFailedToLoad(int errorCode) {
-//                Log.d(TAG, "loadVideoVerticalAd onRewardedAdFailedToLoad: Failed errorCode " + errorCode);
-//                // Ad failed to load.
-//                Error error = new Error();
-//                error.setMessage("视频还没准备好，onRewardedAdFailedToLoad");
-//                error.setCode(String.valueOf(errorCode));
-//                mAdCallback.onNoAd(error);
-//            }
-//        };
-//        AdRequest.Builder builder = new AdRequest.Builder();
-////        builder.addTestDevice("232FB6EC6A8890AE46DF2450BDB68D3F");
-//        AdRequest adRequest = builder.build();
-//        rewardedAd.loadAd(adRequest, adLoadCallback);
+        loadRewardedVideoAd();  //初始化时，首次加载广告
     }
 
     private void loadRewardedVideoAd() {
-        mRewardedVideoAdInstance.loadAd(mVideoAdId,
-                new AdRequest.Builder().build());
+        Log.d(TAG, "loadRewardedVideoAd: google loadAd 加载新的广告");
+        if (mRewardedVideoAdInstance != null) {
+            mRewardedVideoAdInstance.loadAd(mVideoAdId,
+                    new AdRequest.Builder().build());
+        }
     }
 
     private int showBannerNum = 1;
@@ -607,7 +671,7 @@ public class SGoogleAdSDk implements ISGameSDK {
                 @Override
                 public void onAdLoaded() {  //展示
                     // Code to be executed when an ad finishes loading.
-                    Log.d(TAG, "onAdLoaded: ");
+                    Log.d(TAG, "loadBannerAd onAdLoaded: banner广告展示");
                     mAdCallback.onPresent();
                 }
 
@@ -623,7 +687,7 @@ public class SGoogleAdSDk implements ISGameSDK {
                 @Override
                 public void onAdFailedToLoad(int errorCode) {
                     // Code to be executed when an ad request fails.
-                    Log.d(TAG, "onAdFailedToLoad: " + errorCode);
+                    Log.d(TAG, "loadBannerAd banner广告 onAdFailedToLoad: " + errorCode);
 //                DEVICE_ID_EMULATOR
                     mBannerAdAdView = null;
                     showBannerNum = 3;

@@ -39,5 +39,12 @@
         android:text="video"
         android:textSize="28dp" />
 
+    <Button
+        android:id="@+id/google_btn_interstitial"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        android:text="Interstitial"
+        android:textSize="28dp" />
 
 </LinearLayout>

@@ -1,11 +1,13 @@
 {
-  "message": "九游广告SDK参数",
+  "message": "九游广告SDK参数_3D重力子弹先生",
   "data": {
-    "appId": "1000007481",
+    "appId": "1000007588",
+    "bannerAdId": "1568944907509",
+    "videoAdId": "1568962960915",
     "splashAdId": "1562660889741",
-    "bannerAdId": "1562734274878",
-    "videoAdId": "1562660861908",
-    "insterAdId": "1562660902394"
+    "insterAdId": "1562660902394",
+    "umengAppKey": "5d65ea204ca3571b850005eb",
+    "umengChannel": "uc"
   },
   "code": "0"
 }

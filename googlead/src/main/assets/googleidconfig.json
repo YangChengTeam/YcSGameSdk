@@ -1,8 +1,9 @@
 {
   "message": "google广告SDK参数",
   "data": {
-    "videoAdId": "ca-app-pub-5223248037916302/6885409760",
-    "bannerAdId": "ca-app-pub-5223248037916302/5608481958",
+    "videoAdId": "ca-app-pub-5223248037916302/6762042251",
+    "bannerAdId": "ca-app-pub-5223248037916302/9359257762",
+    "insterAdId": "ca-app-pub-5223248037916302/2687065871",
     "mintegralAppKey": "1e9b75371402d7f4b04978c0ae6eb93a",
     "mintegralAppId": "119193",
     "mintegralRewardedVideoUnitId": "151242",

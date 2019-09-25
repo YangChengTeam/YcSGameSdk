@@ -14,6 +14,8 @@ import android.view.WindowManager;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.umeng.analytics.MobclickAgent;
+import com.umeng.commonsdk.UMConfigure;
 import com.yc.adsdk.core.AdCallback;
 import com.yc.adsdk.core.Error;
 import com.yc.adsdk.core.AdType;
@@ -23,6 +25,7 @@ import com.yc.adsdk.core.IUserApiCallback;
 import com.yc.adsdk.core.InitAdCallback;
 import com.yc.adsdk.core.InitUserCallback;
 import com.yc.adsdk.utils.LocalJsonResolutionUtils;
+import com.yc.adsdk.utils.NavigationBarlUtil;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -66,6 +69,8 @@ public class SUcAdSdk implements ISGameSDK {
     private String mWelcomeId;
     private String mIdAppId;
     private Context mVideoContext;
+    private String mUmengAppKey;
+    private String mUmengChannel;
 
 
     public static SUcAdSdk getImpl() {
@@ -95,9 +100,21 @@ public class SUcAdSdk implements ISGameSDK {
         if (!initConfig(context)) {
             return;
         }
-        Log.d(TAG, "init: ids " + " mIdAppId " + mIdAppId + " bannerPosId " + mBannerPosId + " insertPosId " + mInsertPosId + " videoPosId " + mVideoPosId + " welcomeId " + mWelcomeId);
+        Log.d(TAG, "init: ids " + " mIdAppId " + mIdAppId + " bannerPosId " + mBannerPosId + " insertPosId " + mInsertPosId + " videoPosId " + mVideoPosId
+                + " welcomeId " + mWelcomeId + " mUmengAppKey " + mUmengAppKey + " mUmengChannel " + mUmengChannel);
+
+        UMConfigure.init(context, mUmengAppKey, mUmengChannel, UMConfigure.DEVICE_TYPE_PHONE, null);
+        // 选用AUTO页面采集模式
+        MobclickAgent.setPageCollectionMode(MobclickAgent.PageMode.AUTO);
+
+        int sdkVersion = context.getApplicationInfo().targetSdkVersion;
+        if (sdkVersion > 26) {
+            Log.d(TAG, "initAd: 广告SDK支持的安卓平台版本为14~24，也就是4.0以上到7.0的都支持，包括视频内核。 2019-09-23实测26可以展示");
+            Log.d(TAG, "initAd: 当前应用targetSdkVersion 为 " + sdkVersion + " 需要将targetSdkVersion调到26及以下 ");
+        }
 
         initAd(mActivity);
+
     }
 
     @Override
@@ -149,6 +166,20 @@ public class SUcAdSdk implements ISGameSDK {
                     return false;
                 }
             }
+            if (data.has("umengAppKey")) {
+                mUmengAppKey = data.getString("umengAppKey");
+                if (TextUtils.isEmpty(mUmengAppKey)) {
+                    Toast.makeText(context, "初始化失败，缺少广告必须参数 umengAppKey", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+            }
+            if (data.has("umengChannel")) {
+                mUmengChannel = data.getString("umengChannel");
+                if (TextUtils.isEmpty(mUmengChannel)) {
+                    Toast.makeText(context, "初始化失败，缺少广告必须参数 mUmengChannel", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -156,6 +187,7 @@ public class SUcAdSdk implements ISGameSDK {
     }
 
     private void initAd(Activity activity) {
+        Log.d(TAG, "initAd: NGASDK.APP_ID " + NGASDK.APP_ID + " mIdAppId " + mIdAppId);
         NGASDK ngasdk = NGASDKFactory.getNGASDK();
         Map<String, Object> args = new HashMap<>();
         args.put(NGASDK.APP_ID, mIdAppId);
@@ -165,8 +197,7 @@ public class SUcAdSdk implements ISGameSDK {
     private NGASDK.InitCallback mInitCallback = new NGASDK.InitCallback() {  //初始化
         @Override
         public void success() {
-            Log.d(TAG, "success: initAd: success");
-            Log.d(TAG, "initSGameSDK initAd: success");
+            Log.d(TAG, "initSGameSDK success: initAd: success");
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -180,8 +211,7 @@ public class SUcAdSdk implements ISGameSDK {
 
         @Override
         public void fail(Throwable throwable) {
-            Log.d(TAG, "success: initAd: success");
-            Log.d(TAG, "initSGameSDK initAd: fail");
+            Log.d(TAG, " initSGameSDK success: initAd: success");
             if (mSAdSDKInitCallback != null) {
                 Error error = new Error();
                 error.setCode(String.valueOf(Error.AD_INIT_ERROR));
@@ -409,13 +439,12 @@ public class SUcAdSdk implements ISGameSDK {
     }
 
     private void showVideoAd() {
+        Log.d(TAG, "showVideoAd: 播放视频广告 ");
         isLoadAndShowVideo = false;
         if (mNGAVideoController != null) { //播放视频
             mNGAVideoController.showAd();
-            if (mAdCallback != null) {
-                mAdCallback.onPresent();
-            }
         } else {
+            Log.d(TAG, "showVideoAd: 播放视频广告加载失败，重新加载");
             loadVideoAd((Activity) mVideoContext);
             isLoadAndShowVideo = true;
         }
@@ -456,7 +485,12 @@ public class SUcAdSdk implements ISGameSDK {
                 mAdCallback.onDismissed();
             }
             mNGAVideoController = null;  //清除上一个视频的Controller
-            loadVideoAd((Activity) mVideoContext);
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    loadVideoAd((Activity) mVideoContext);
+                }
+            }, 1200);
         }
 
         @Override

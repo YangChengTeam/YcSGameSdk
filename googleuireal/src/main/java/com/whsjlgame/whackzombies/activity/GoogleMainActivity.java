@@ -46,10 +46,12 @@ public class GoogleMainActivity extends BasePermissionActivity implements View.O
         Button banner = findViewById(R.id.google_btn_banner);
         Button hide_banner = findViewById(R.id.google_btn_hide_banner);
         Button video = findViewById(R.id.google_btn_video);
+        Button interstitial = findViewById(R.id.google_btn_interstitial);
 
         hide_banner.setOnClickListener(this);
         banner.setOnClickListener(this);
         video.setOnClickListener(this);
+        interstitial.setOnClickListener(this);
     }
 
     @Override
@@ -61,7 +63,34 @@ public class GoogleMainActivity extends BasePermissionActivity implements View.O
             hideBanner();
         } else if (i == R.id.google_btn_video) {
             showVideo();
+        } else if (i == R.id.google_btn_interstitial) {
+            showIinterstitial();
         }
+    }
+
+    private void showIinterstitial() {
+        SAdSDK.getImpl().showAd(GoogleMainActivity.this, AdType.INSTER, new AdCallback() {
+            @Override
+            public void onDismissed() {
+
+            }
+
+            @Override
+            public void onNoAd(Error error) {
+
+            }
+
+
+            @Override
+            public void onPresent() {
+
+            }
+
+            @Override
+            public void onClick() {
+
+            }
+        });
     }
 
     private void showVideo() {

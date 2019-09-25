@@ -76,34 +76,6 @@ public class SNopAdSDk implements ISGameSDK {
         }
     }
 
-
-    /*private boolean initConfig(Context context) {
-        String idconfig = LocalJsonResolutionUtils.getJson(context, "nopidconfig.json");
-        try {
-            JSONObject jsonObject = new JSONObject(idconfig);
-            JSONObject data = jsonObject.getJSONObject("data");
-            if (data.has("umengAppKey")) {
-                mUmengAppKey = data.getString("umengAppKey");
-                if (TextUtils.isEmpty(mUmengAppKey)) {
-                    Toast.makeText(context, "初始化失败，缺少广告必须参数 umengAppKey", Toast.LENGTH_SHORT).show();
-                    return false;
-                }
-            }
-            if (data.has("umengChannel")) {
-                mUmengChannel = data.getString("umengChannel");
-                if (TextUtils.isEmpty(mUmengChannel)) {
-                    Toast.makeText(context, "初始化失败，缺少广告必须参数 mUmengChannel", Toast.LENGTH_SHORT).show();
-                    return false;
-                }
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-            Log.d(TAG, "initConfig: JSONException " + e.toString());
-        }
-        return true;
-    }*/
-
-
     @Override
     public void showAd(Context context, AdType type, AdCallback callback) {
         this.showAd(context, type, callback, null);
