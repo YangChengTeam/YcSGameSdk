@@ -122,8 +122,6 @@ public class STtAdSDk implements ISGameSDK {
 
     @Override
     public void showAd(Context context, AdType type, AdCallback callback, ViewGroup viewGroup) {
-
-//        TTConfig ttConfig = (TTConfig) mConfig.getExt();
         mTTAdNative = TTAdManagerHolder.get().createAdNative(context);
         mAdCallback = callback;
         mShowAdContext = context;
@@ -359,7 +357,7 @@ public class STtAdSDk implements ISGameSDK {
         ((TextView) nativeView.findViewById(R.id.tv_native_ad_title)).setText(nativeAd.getTitle());
         ((TextView) nativeView.findViewById(R.id.tv_native_ad_desc)).setText(nativeAd.getDescription());
         ImageView imgDislike = nativeView.findViewById(R.id.img_native_dislike);
-        bindDislikeAction(nativeAd, imgDislike);
+//        bindDislikeAction(nativeAd, imgDislike);
         if (nativeAd.getImageList() != null && !nativeAd.getImageList().isEmpty()) {
             TTImage image = nativeAd.getImageList().get(0);
             if (image != null && image.isValid()) {
@@ -434,29 +432,29 @@ public class STtAdSDk implements ISGameSDK {
     }
 
     //接入网盟的dislike 逻辑，有助于提示广告精准投放度
-    private void bindDislikeAction(TTNativeAd ad, View dislikeView) {
-        final TTAdDislike ttAdDislike = ad.getDislikeDialog((Activity) mShowAdContext);
-        if (ttAdDislike != null) {
-            ttAdDislike.setDislikeInteractionCallback(new TTAdDislike.DislikeInteractionCallback() {
-                @Override
-                public void onSelected(int position, String value) {
-                    mSplashContainer.removeAllViews();
-                }
-
-                @Override
-                public void onCancel() {
-
-                }
-            });
-        }
-        dislikeView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (ttAdDislike != null)
-                    ttAdDislike.showDislikeDialog();
-            }
-        });
-    }
+//    private void bindDislikeAction(TTNativeAd ad, View dislikeView) {
+//        final TTAdDislike ttAdDislike = ad.getDislikeDialog((Activity) mShowAdContext);
+//        if (ttAdDislike != null) {
+//            ttAdDislike.setDislikeInteractionCallback(new TTAdDislike.DislikeInteractionCallback() {
+//                @Override
+//                public void onSelected(int position, String value) {
+//                    mSplashContainer.removeAllViews();
+//                }
+//
+//                @Override
+//                public void onCancel() {
+//
+//                }
+//            });
+//        }
+//        dislikeView.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (ttAdDislike != null)
+//                    ttAdDislike.showDislikeDialog();
+//            }
+//        });
+//    }
 
     private final TTAppDownloadListener mDownloadListener = new TTAppDownloadListener() {
         @Override
@@ -576,20 +574,20 @@ public class STtAdSDk implements ISGameSDK {
                 //（可选）设置下载类广告的下载监听
                 bindDownloadListener(ad);
                 //在banner中显示网盟提供的dislike icon，有助于广告投放精准度提升
-                ad.setShowDislikeIcon(new TTAdDislike.DislikeInteractionCallback() {
-                    @Override
-                    public void onSelected(int position, String value) {
-//                        showToast("Banner展示 " + "点击 " + value);
-                        //用户选择不喜欢原因后，移除广告展示
-//                        mSplashContainer.removeAllViews();
-                        mBannerView.removeAllViews();
-                    }
-
-                    @Override
-                    public void onCancel() {
-//                        showToast("Banner展示 " + "点击取消 ");
-                    }
-                });
+//                ad.setShowDislikeIcon(new TTAdDislike.DislikeInteractionCallback() {
+//                    @Override
+//                    public void onSelected(int position, String value) {
+////                        showToast("Banner展示 " + "点击 " + value);
+//                        //用户选择不喜欢原因后，移除广告展示
+////                        mSplashContainer.removeAllViews();
+//                        mBannerView.removeAllViews();
+//                    }
+//
+//                    @Override
+//                    public void onCancel() {
+////                        showToast("Banner展示 " + "点击取消 ");
+//                    }
+//                });
 
                 //获取网盟dislike dialog，您可以在您应用中本身自定义的dislike icon 按钮中设置 mTTAdDislike.showDislikeDialog();
                 /*mTTAdDislike = ad.getDislikeDialog(new TTAdDislike.DislikeInteractionCallback() {

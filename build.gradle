@@ -2,6 +2,11 @@
 
 buildscript {
     repositories {
+
+        maven { url "https://jitpack.io" }
+        maven { url 'https://maven.aliyun.com/repository/google/' }
+        maven { url 'https://maven.aliyun.com/repository/jcenter/'}
+
         google()
         jcenter()
         maven { url 'https://dl.bintray.com/umsdk/release' }
@@ -18,6 +23,11 @@ buildscript {
 
 allprojects {
     repositories {
+
+        maven { url "https://jitpack.io" }
+        maven { url 'https://maven.aliyun.com/repository/google/' }
+        maven { url 'https://maven.aliyun.com/repository/jcenter/'}
+
         google()
         jcenter()
         maven { url 'https://dl.bintray.com/umsdk/release' }

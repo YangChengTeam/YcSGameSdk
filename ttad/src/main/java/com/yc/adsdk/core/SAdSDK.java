@@ -50,7 +50,7 @@ public class SAdSDK implements ISGameSDK {
             //:申请部分权限，如read_phone_state,防止获取不了imei时候，下载类广告没有填充的问题。
             TTAdManagerHolder.get().requestPermissionIfNecessary(context);
         }
-        STtAdSDk.getImpl().showAd(context, type, callback);
+        STtAdSDk.getImpl().showAd(context, type, callback, viewGroup);
     }
 
     @Override

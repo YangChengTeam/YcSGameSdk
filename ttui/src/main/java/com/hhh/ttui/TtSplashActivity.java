@@ -12,7 +12,6 @@ import com.yc.adsdk.core.AdType;
 import com.yc.adsdk.core.Error;
 import com.yc.adsdk.core.InitAdCallback;
 import com.yc.adsdk.core.SAdSDK;
-import com.yc.adsdk.tt.STtAdSDk;
 
 public class TtSplashActivity extends Activity {
     private String TAG="GameSdkLog_TtSplashActivity";
@@ -23,7 +22,7 @@ public class TtSplashActivity extends Activity {
         setContentView(R.layout.activity_tt_splash);
 
 
-        STtAdSDk.getImpl().initAd(this, new InitAdCallback() {
+        SAdSDK.getImpl().initAd(this, new InitAdCallback() {
             @Override
             public void onSuccess() {
                 Log.d(TAG, "initAd onSuccess: ");
